@@ -1,5 +1,9 @@
+import chat.ChatRoom;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class ServerWorker extends Thread {
@@ -44,20 +48,76 @@ public class ServerWorker extends Thread {
                     break;
                 } else if ("login".equalsIgnoreCase(command)) {
                     handleLogin(outputStream, response);
+                } else if ("msg".equalsIgnoreCase(command)) {
+                    handleMessage(response);
+                } else if ("join".equalsIgnoreCase(command)) {
+                    handleJoin(response);
                 } else {
                     String msg = "unknown " + command + "\n";
                     outputStream.write(msg.getBytes());
                 }
             }
 
-            String msg = "You typed: " + line;
+            String msg = "You typed: " + line + "\n";
             outputStream.write(msg.getBytes());
         }
         outputStream.write("Hello World\n".getBytes());
         clientSocket.close();
     }
 
+    private void handleJoin(String[] response) throws IOException {
+        if(response.length > 1 && response[1].charAt(0) == '#') {
+            String topic = response[1];
+            server.addToChatRoom(login, topic);
+        }
+        else {
+            outputStream.write("Incorrectly formatted join \n".getBytes());
+        }
+    }
+
+    private boolean isMemberOfGroup(String groupName) {
+        if(server.findByName(groupName) != null) {
+            boolean isPresentInChatRoom = server.findByName(groupName).getCurrentUsers().contains(login);
+            return isPresentInChatRoom;
+        }
+        return false;
+    }
+
+    // "msg" "username" "message"
+    private void handleMessage(String[] response) throws IOException {
+        String sendTo = response[1];
+        String msg = getMessageBody(response);
+
+        List<ServerWorker> serverWorkers = server.getServerWorkers();
+
+        if (sendTo.charAt(0) == '#') {
+            if(isMemberOfGroup(sendTo)) {
+                for(String user : server.findByName(sendTo).getCurrentUsers()) {
+                    for (ServerWorker sw : serverWorkers) {
+                        if (user.equalsIgnoreCase(sw.getLogin())) {
+                            String outMsg = "msg for " + sendTo + " group from " + login + " " + getMessageBody(response) + "\n";
+                            sw.send(outMsg);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            for (ServerWorker sw : serverWorkers) {
+                if (sendTo.equalsIgnoreCase(sw.getLogin())) {
+                    String outMsg = "msg " + login + " " + msg + "\n";
+                    sw.send(outMsg);
+                }
+            }
+        }
+    }
+
+    private String getMessageBody(String[] response) {
+        return String.join(" ", Arrays.copyOfRange(response, 2, response.length));
+    }
+
     private void handleLogoff() throws IOException {
+        server.removeWorker(this);
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String onlineMsg = "user offline: " + login + "\n";
         for (ServerWorker sw : serverWorkers) {
