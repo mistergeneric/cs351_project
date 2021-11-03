@@ -2,6 +2,7 @@ import chat.ChatRoom;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -31,14 +32,12 @@ public class ServerWorker extends Thread {
         }
     }
 
-
     //this is the 'meat and potatoes' so this is where we get the message or whatever else and then we'll process it
     private void handleClientSocket() throws IOException {
         InputStream inputStream = clientSocket.getInputStream();
         this.outputStream = clientSocket.getOutputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        outputStream.write("Welcome, please enter a command\n".getBytes());
         while ((line = reader.readLine()) != null) {
             String[] response = line.split(" ");
             if (response.length > 0) {
@@ -75,9 +74,9 @@ public class ServerWorker extends Thread {
         }
     }
 
-    private boolean isMemberOfGroup(String groupName) {
-        if(server.findByName(groupName) != null) {
-            boolean isPresentInChatRoom = server.findByName(groupName).getCurrentUsers().contains(login);
+    private boolean isMemberOfGroup(String chatRoomName) {
+        if(server.findByName(chatRoomName) != null) {
+            boolean isPresentInChatRoom = server.findByName(chatRoomName).getCurrentUsers().contains(login);
             return isPresentInChatRoom;
         }
         return false;
@@ -105,7 +104,7 @@ public class ServerWorker extends Thread {
         else {
             for (ServerWorker sw : serverWorkers) {
                 if (sendTo.equalsIgnoreCase(sw.getLogin())) {
-                    String outMsg = "msg " + login + " " + msg + "\n";
+                    String outMsg = login + ": " + msg + "\n";
                     sw.send(outMsg);
                 }
             }
@@ -155,6 +154,7 @@ public class ServerWorker extends Thread {
                 }
             } else {
                 outputStream.write("Failed\n".getBytes());
+                System.err.println("Login failed for " + login);
             }
         }
     }
