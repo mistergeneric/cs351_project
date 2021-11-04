@@ -51,7 +51,13 @@ public class ServerWorker extends Thread {
                     handleMessage(response);
                 } else if ("join".equalsIgnoreCase(command)) {
                     handleJoin(response);
-                } else {
+                }else if ("description".equalsIgnoreCase(command)){
+                    handleDescription(response);
+                }else if("who".equalsIgnoreCase(command)){
+                    handleWhoIsOnline();
+                }
+                
+                else {
                     String msg = "unknown " + command + "\n";
                     outputStream.write(msg.getBytes());
                 }
@@ -62,6 +68,23 @@ public class ServerWorker extends Thread {
         }
         outputStream.write("Hello World\n".getBytes());
         clientSocket.close();
+    }
+
+    private void handleWhoIsOnline() throws IOException {
+        String onlineMsg = "Users online: " + login + "\n";
+        List<ServerWorker> serverWorkers = server.getServerWorkers();
+        //send current user who is online
+        for (ServerWorker sw : serverWorkers) {
+            //don't report on itself or not logged in user
+            if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
+                String whoIsOnline = "online: " + sw.getLogin() + "\n";
+                send(whoIsOnline);
+            }
+        }
+    }
+
+    private void handleDescription(String[] response) {
+
     }
 
     private void handleJoin(String[] response) throws IOException {
@@ -104,7 +127,7 @@ public class ServerWorker extends Thread {
         else {
             for (ServerWorker sw : serverWorkers) {
                 if (sendTo.equalsIgnoreCase(sw.getLogin())) {
-                    String outMsg = login + ": " + msg + "\n";
+                    String outMsg = "msg " + login + ": " + msg + "\n";
                     sw.send(outMsg);
                 }
             }
@@ -118,10 +141,10 @@ public class ServerWorker extends Thread {
     private void handleLogoff() throws IOException {
         server.removeWorker(this);
         List<ServerWorker> serverWorkers = server.getServerWorkers();
-        String onlineMsg = "user offline: " + login + "\n";
+        String offlineMsg = "user offline: " + login + "\n";
         for (ServerWorker sw : serverWorkers) {
             if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
-                sw.send(onlineMsg);
+                sw.send(offlineMsg);
             }
         }
         clientSocket.close();

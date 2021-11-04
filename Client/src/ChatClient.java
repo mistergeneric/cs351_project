@@ -16,6 +16,7 @@ public class ChatClient {
     private BufferedReader bufferedIn;
     private ArrayList<UserStatusListener> userStatusListeners = new ArrayList<>();
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
+    private UserClient user;
 
 
     public ChatClient(String serverName, int serverPort){
@@ -44,7 +45,7 @@ public class ChatClient {
             client.addMessageListener(new MessageListener() {
                 @Override
                 public void onMessage(String from, String message) {
-                    System.out.println(from + " >>> " + message + "___________\n");
+                    System.out.println(from + " " + message );
                 }
             });
 
@@ -63,7 +64,7 @@ public class ChatClient {
         serverOut.write(cmd.getBytes());
     }
 
-    private void logoff() throws IOException {
+    public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
     }
@@ -77,8 +78,10 @@ public class ChatClient {
 
         if ("Success".equalsIgnoreCase(response)){
             startMessageReader();
+            user = new UserClient(id, password);
+            user.setChatClient(this);
             return true;
-        }else{
+        } else {
             return false;
         }
 
@@ -147,7 +150,6 @@ public class ChatClient {
     private boolean connect() throws IOException {
         try{
             socket = new Socket(serverName, serverPort);
-            System.out.println("Client port is " + socket.getLocalPort());
             this.serverOut = socket.getOutputStream();
             this.serverIn = socket.getInputStream();
             this.bufferedIn = new BufferedReader(new InputStreamReader(serverIn));
