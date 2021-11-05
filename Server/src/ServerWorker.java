@@ -39,6 +39,7 @@ public class ServerWorker extends Thread {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
         while ((line = reader.readLine()) != null) {
+            System.out.println(line);
             String[] response = line.split(" ");
             if (response.length > 0) {
                 String command = response[0];

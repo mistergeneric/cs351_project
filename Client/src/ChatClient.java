@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class ChatClient {
 
@@ -11,10 +12,11 @@ public class ChatClient {
     private OutputStream serverOut;
     private InputStream serverIn;
     private BufferedReader bufferedIn;
+    private BufferedWriter bufferedOut;
     private ArrayList<UserStatusListener> userStatusListeners = new ArrayList<>();
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
     private UserObject user;
-
+    private PrintWriter printWriter;
 
     public ChatClient(String serverName, int serverPort){
         this.serverName = serverName;
@@ -23,6 +25,8 @@ public class ChatClient {
 
     public static void main(String[] args) throws IOException {
         ChatClient client = new ChatClient("localhost", 8818);
+        Scanner scanner = new Scanner(System.in);
+
         if(!client.connect()){
             System.err.println("Connection failed");
         }else{
@@ -46,13 +50,34 @@ public class ChatClient {
                 }
             });
 
-            if(client.login("guest", "guest")){
+            System.out.println("Enter your ID: ");
+            String id = "";
+            String password = "";
+
+            if(scanner.hasNextLine()){
+                id = scanner.nextLine();
+            }
+            System.out.println("Enter your password: ");
+            if(scanner.hasNextLine()){
+                password = scanner.nextLine();
+            }
+
+            if(client.login(id, password)){
                 System.out.println("Login Successful");
+                client.typeMessage();
                 client.msg("andrew", "Hello");
             }else{
                 System.out.println("Login failed");
             }
             //client.logoff();
+        }
+    }
+
+    private void typeMessage() throws IOException {
+        Scanner scanner = new Scanner(System.in);
+        while(scanner.hasNextLine()){
+            String s = scanner.nextLine();
+            serverOut.write(s.getBytes());
         }
     }
 
@@ -149,6 +174,7 @@ public class ChatClient {
             this.serverOut = socket.getOutputStream();
             this.serverIn = socket.getInputStream();
             this.bufferedIn = new BufferedReader(new InputStreamReader(serverIn));
+            this.printWriter = new PrintWriter(new OutputStreamWriter(serverOut), true);
             return true;
         }catch (IOException e){
             e.printStackTrace();
