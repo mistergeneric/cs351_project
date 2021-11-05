@@ -1,6 +1,3 @@
-import com.sun.deploy.util.StringUtils;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -16,7 +13,7 @@ public class ChatClient {
     private BufferedReader bufferedIn;
     private ArrayList<UserStatusListener> userStatusListeners = new ArrayList<>();
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
-    private UserClient user;
+    private UserObject user;
 
 
     public ChatClient(String serverName, int serverPort){
@@ -78,7 +75,7 @@ public class ChatClient {
 
         if ("Success".equalsIgnoreCase(response)){
             startMessageReader();
-            user = new UserClient(id, password);
+            user = new UserObject(id, password);
             user.setChatClient(this);
             return true;
         } else {
@@ -86,7 +83,6 @@ public class ChatClient {
         }
 
     }
-
     private void startMessageReader() {
         Thread thread = new Thread(){
             @Override
