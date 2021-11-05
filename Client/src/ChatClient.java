@@ -81,8 +81,8 @@ public class ChatClient {
         } else {
             return false;
         }
-
     }
+
     private void startMessageReader() {
         Thread thread = new Thread(){
             @Override

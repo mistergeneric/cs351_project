@@ -5,15 +5,17 @@ public class UserObject {
     String id;
     String password;
     String description;
-    HashSet<UserObject> friends;
-    HashSet<UserObject> likedBy;
+    HashSet<String> friends;
+    HashSet<String> likedBy;
     ChatClient chatClient;
+    Boolean isAdmin;
 
     public UserObject(String id, String password){
         this.id = id;
         this.password = password;
         friends = new HashSet<>();
         likedBy = new HashSet<>();
+        isAdmin = false;
     }
 
     //Check whether the password is correct
@@ -24,8 +26,6 @@ public class UserObject {
         }
         return true;
     }
-
-
 
     public void setDescription(String description){
         this.description = description;
@@ -38,6 +38,4 @@ public class UserObject {
     public void setChatClient(ChatClient chatClient){
         this.chatClient = chatClient;
     }
-
-
 }

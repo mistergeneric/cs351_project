@@ -8,7 +8,7 @@ public class AdminObject extends UserObject {
 
     public AdminObject(String id, String password){
         super(id, password);
-
+        isAdmin = true;
     }
 
     public void editDescription(UserObject user, String description){
@@ -21,6 +21,5 @@ public class AdminObject extends UserObject {
 
     public void broadcastMessage(String message, String serverName, int serverPort) throws IOException {
         socket = new Socket(serverName, serverPort);
-
     }
 }
