@@ -64,7 +64,7 @@ public class ChatClient {
 
             if(client.login(id, password)){
                 System.out.println("Login Successful");
-                client.typeMessage();
+                client.userInput();
                 client.msg("andrew", "Hello");
             }else{
                 System.out.println("Login failed");
@@ -73,10 +73,10 @@ public class ChatClient {
         }
     }
 
-    private void typeMessage() throws IOException {
+    private void userInput() throws IOException {
         Scanner scanner = new Scanner(System.in);
         while(scanner.hasNextLine()){
-            String s = scanner.nextLine();
+            String s = scanner.nextLine() + "\n";
             serverOut.write(s.getBytes());
         }
     }
