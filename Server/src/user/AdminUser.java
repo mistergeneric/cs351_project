@@ -1,21 +1,22 @@
+package user;
+
 import java.io.IOException;
 import java.net.Socket;
 
-public class AdminObject extends UserObject {
+public class AdminUser extends User {
 
-    Server server;
     Socket socket;
 
-    public AdminObject(String id, String password){
-        super(id, password);
+    public AdminUser(String login, String password, String description) {
+        super(login, password, description);
         isAdmin = true;
     }
 
-    public void editDescription(UserObject user, String description){
+    public void editDescription(User user, String description){
         user.setDescription(description);
     }
 
-    public void kickUser(UserObject user) throws IOException {
+    public void kickUser(User user) throws IOException {
         user.chatClient.logoff();
     }
 

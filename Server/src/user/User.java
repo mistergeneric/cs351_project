@@ -1,5 +1,8 @@
 package user;
 
+import client.ChatClient;
+
+import java.io.*;
 import java.util.HashSet;
 
 public class User {
@@ -9,6 +12,8 @@ public class User {
     private HashSet<String> friends;
     private HashSet<String> likes;
     private String currentChatRoom;
+    protected ChatClient chatClient;
+    boolean isAdmin;
 
     public User(String login, String password, String description) {
         this.login = login;
@@ -17,6 +22,7 @@ public class User {
         this.friends = new HashSet<>();
         this.likes = new HashSet<>();
         this.currentChatRoom = null;
+        isAdmin = false;
     }
 
     public HashSet<String> getFriends() {
@@ -75,4 +81,39 @@ public class User {
         return likes.add(likedBy.toLowerCase());
     }
 
+    public void setChatClient(ChatClient chatClient){
+        this.chatClient = chatClient;
+    }
+
+    void SaveToFile(String filePath)
+    {
+        try{
+            FileOutputStream file = new FileOutputStream(filePath);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+            out.writeObject(this);
+            out.close();
+            file.close();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    User LoadFromFile(String filePath){
+        User user = null;
+        try{
+            FileInputStream file = new FileInputStream(filePath);
+            ObjectInputStream in = new ObjectInputStream(file);
+
+            user = (User) in.readObject();
+            in.close();
+            file.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
 }

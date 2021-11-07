@@ -46,6 +46,7 @@ public class ServerWorker extends Thread {
         String line;
         outputStream.write("Welcome, please enter a command\n".getBytes());
         while ((line = reader.readLine()) != null) {
+            System.out.println("Server received: " + line);
             String[] response = line.split(" ");
             if (response.length > 0) {
                 String command = response[0];

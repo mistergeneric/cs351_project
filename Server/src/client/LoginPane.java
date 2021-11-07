@@ -24,7 +24,7 @@ public class LoginPane extends JFrame {
     private JTextField responseText = new JTextField();
 
 
-    public LoginPane() {
+    public LoginPane() throws IOException {
         super("Login to Chat");
         this.client = new ChatClient("localhost",8818);
         client.connect();
@@ -132,7 +132,7 @@ public class LoginPane extends JFrame {
         dispose();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         LoginPane login = new LoginPane();
         login.setVisible(true);
     }

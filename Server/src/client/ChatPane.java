@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import client.ChatClient;
 
 /**
  * Main Frame, holds view of rooms, users in current room and buttons to send commands
