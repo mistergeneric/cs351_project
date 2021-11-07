@@ -1,4 +1,0 @@
-id bob
-password bob
-description
-friends

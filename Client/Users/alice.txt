@@ -1,4 +1,0 @@
-id alice
-password alice
-description
-friends
