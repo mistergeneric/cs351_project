@@ -24,10 +24,12 @@ public class ChatClient {
     private User user;
     private PrintWriter printWriter;
     private String login;
+    private String filePath;
 
     public ChatClient(String serverName, int serverPort){
         this.serverName = serverName;
         this.serverPort = serverPort;
+        filePath = "usersFile.txt";
     }
 
     public static void main(String[] args) throws IOException {
@@ -57,11 +59,11 @@ public class ChatClient {
                 }
             });
 
-            System.out.println("Enter your ID: ");
+            //System.out.println("Enter your ID: ");
             String id = "";
             String password = "";
-
-            if(scanner.hasNextLine()){
+            client.userInput();
+            /*if(scanner.hasNextLine()){
                 id = scanner.nextLine();
             }
             System.out.println("Enter your password: ");
@@ -75,7 +77,7 @@ public class ChatClient {
                 client.msg("andrew", "Hello");
             }else{
                 System.out.println("Login failed");
-            }
+            }*/
             //client.logoff();
         }
     }
@@ -96,6 +98,7 @@ public class ChatClient {
     public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
+        user.SaveToFile(filePath);
     }
 
     protected boolean login(String id, String password) throws IOException {
@@ -107,7 +110,7 @@ public class ChatClient {
 
         if ("Success".equalsIgnoreCase(response)){
             startMessageReader();
-            user = new User(id, password, "");
+            user = new User(id, password);
             user.setChatClient(this);
             return true;
         } else {

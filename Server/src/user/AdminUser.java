@@ -6,9 +6,8 @@ import java.net.Socket;
 public class AdminUser extends User {
 
     Socket socket;
-
-    public AdminUser(String login, String password, String description) {
-        super(login, password, description);
+    public AdminUser(String login, String password) {
+        super(login, password);
         isAdmin = true;
     }
 

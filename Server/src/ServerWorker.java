@@ -44,7 +44,6 @@ public class ServerWorker extends Thread {
         this.outputStream = clientSocket.getOutputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        outputStream.write("Welcome, please enter a command\n".getBytes());
         while ((line = reader.readLine()) != null) {
             System.out.println("Server received: " + line);
             String[] response = line.split(" ");
@@ -342,12 +341,12 @@ public class ServerWorker extends Thread {
         if (response.length > 3) {
             String login = response[1];
             String password = response[2];
-            String description = response[3];
             if (server.findByUserName(login) == null) {
-                User user = new User(login, password, description);
+                User user = new User(login, password);
                 outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
                 server.addUser(user);
+                user.SaveToFile("users.txt");
             } else {
                 outputStream.write("User already exists, please login \n".getBytes());
             }
@@ -440,7 +439,7 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) != null) {
                 User user = server.findByUserName(login);
-                if (user.getPassword().equals(password)) {
+                if (user.isPasswordValid(login, password, "users.txt")) {
                     outputStream.write("Success\n".getBytes());
                     this.user = user;
                     System.out.println("User logged in successfully " + login);
