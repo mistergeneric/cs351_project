@@ -1,22 +1,30 @@
 package user;
 
-import java.util.HashSet;
+import client.ChatClient;
 
-public class User {
+import java.io.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+public class User implements Serializable {
     private String login;
     private String password;
     private String description;
     private HashSet<String> friends;
     private HashSet<String> likes;
     private String currentChatRoom;
+    protected ChatClient chatClient;
+    boolean isAdmin;
 
-    public User(String login, String password, String description) {
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
-        this.description = description;
         this.friends = new HashSet<>();
         this.likes = new HashSet<>();
         this.currentChatRoom = null;
+        isAdmin = false;
     }
 
     public HashSet<String> getFriends() {
@@ -75,4 +83,66 @@ public class User {
         return likes.add(likedBy.toLowerCase());
     }
 
+    public void setChatClient(ChatClient chatClient){
+        this.chatClient = chatClient;
+    }
+
+    public void SaveToFile(String filePath)
+    {
+        ArrayList<User> users = LoadFromFile(filePath);
+        users.add(this);
+        try{
+            FileOutputStream file = new FileOutputStream(filePath);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+            out.writeObject(users);
+            out.close();
+            file.close();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    ArrayList<User> LoadFromFile(String filePath){
+        ArrayList<User> users = new ArrayList<>();
+        Boolean keepReading = true;
+        try{
+            FileInputStream file = new FileInputStream(filePath);
+            ObjectInputStream in = new ObjectInputStream(file);
+            while(keepReading){
+                users = (ArrayList<User>) in.readObject();
+            }
+            in.close();
+            file.close();
+        } catch (EOFException e){
+            keepReading = false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    boolean userExists(String login, String filePath){
+        ArrayList<User> users = LoadFromFile(filePath);
+        for(User user: users){
+            if(user.getLogin().equalsIgnoreCase(login)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPasswordValid(String login, String password, String filePath){
+        ArrayList<User> users = LoadFromFile(filePath);
+        for(User user: users){
+            if(user.getLogin().equalsIgnoreCase(login)){
+                if(user.getPassword().equals(password)){
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
 }

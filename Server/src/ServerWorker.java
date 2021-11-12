@@ -2,15 +2,14 @@ import user.User;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 public class ServerWorker extends Thread {
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private User user;
-    private Server server;
+    private final Server server;
     private OutputStream outputStream;
     private HashSet<String> friendRequests;
 
@@ -45,8 +44,8 @@ public class ServerWorker extends Thread {
         this.outputStream = clientSocket.getOutputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        outputStream.write("Welcome, please enter a command\n".getBytes());
         while ((line = reader.readLine()) != null) {
+            System.out.println("Server received: " + line);
             String[] response = line.split(" ");
             if (response.length > 0) {
                 String command = response[0];
@@ -142,6 +141,7 @@ public class ServerWorker extends Thread {
         clientSocket.close();
     }
 
+    //Is response here necessary?
     private void friendList(String[] response) throws IOException {
         if (user.getFriends().size() > 0) {
             String friendsList = "Your friends:\n";
@@ -341,12 +341,12 @@ public class ServerWorker extends Thread {
         if (response.length > 3) {
             String login = response[1];
             String password = response[2];
-            String description = response[3];
             if (server.findByUserName(login) == null) {
-                User user = new User(login, password, description);
+                User user = new User(login, password);
                 outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
                 server.addUser(user);
+                user.SaveToFile("users.txt");
             } else {
                 outputStream.write("User already exists, please login \n".getBytes());
             }
@@ -384,8 +384,7 @@ public class ServerWorker extends Thread {
 
     private boolean isMemberOfGroup(String groupName) {
         if (server.findByChatRoomName(groupName) != null) {
-            boolean isPresentInChatRoom = server.findByChatRoomName(groupName).getCurrentUsers().contains(user.getLogin());
-            return isPresentInChatRoom;
+            return server.findByChatRoomName(groupName).getCurrentUsers().contains(user.getLogin());
         }
         return false;
     }
@@ -440,7 +439,7 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) != null) {
                 User user = server.findByUserName(login);
-                if (user.getPassword().equals(password)) {
+                if (user.isPasswordValid(login, password, "users.txt")) {
                     outputStream.write("Success\n".getBytes());
                     this.user = user;
                     System.out.println("User logged in successfully " + login);

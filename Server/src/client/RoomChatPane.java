@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import client.ChatClient;
 
 /**
  * Chat pane, currently only need one, but could be extended to create a new pane per room if
