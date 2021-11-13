@@ -137,8 +137,8 @@ public class ServerWorker extends Thread {
             String msg = "You typed: " + line + "\n";
             outputStream.write(msg.getBytes());
         }
-        outputStream.write("Hello World\n".getBytes());
-        clientSocket.close();
+        //outputStream.write("Hello World\n".getBytes());
+        //clientSocket.close();
     }
 
     //Is response here necessary?
@@ -338,13 +338,14 @@ public class ServerWorker extends Thread {
 
 
     private void handleRegister(String[] response) throws IOException {
-        if (response.length > 3) {
+        if (response.length > 2) {
             String login = response[1];
             String password = response[2];
             if (server.findByUserName(login) == null) {
                 User user = new User(login, password);
                 outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
+                handleLogin(outputStream,response);
                 server.addUser(user);
                 user.SaveToFile("users.txt");
             } else {
