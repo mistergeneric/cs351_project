@@ -4,6 +4,7 @@ import client.MessageListener;
 import client.UserStatusListener;
 import user.User;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class ChatClient {
     private BufferedWriter bufferedOut;
     private ArrayList<UserStatusListener> userStatusListeners = new ArrayList<>();
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
-    private User user;
+    //private User user;
     private PrintWriter printWriter;
     private String login;
     private String filePath;
@@ -98,7 +99,7 @@ public class ChatClient {
     public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
-        user.SaveToFile(filePath);
+        //user.SaveToFile(filePath);
     }
 
     protected boolean login(String id, String password) throws IOException {
@@ -110,8 +111,8 @@ public class ChatClient {
 
         if ("Success".equalsIgnoreCase(response)){
             startMessageReader();
-            user = new User(id, password);
-            user.setChatClient(this);
+            //user = new User(id, password);
+            //user.setChatClient(this);
             return true;
         } else {
             return false;
@@ -140,7 +141,7 @@ public class ChatClient {
                         handleOnline(tokens);
                     }else if("offline".equalsIgnoreCase(cmd)){
                         handleOffline(tokens);
-                    }else if("msg".equalsIgnoreCase(cmd)){
+                    }else {
                         String[] tokensMsg = line.split(" ");
                         String message = String.join(" ", Arrays.copyOfRange(tokensMsg, 2, tokensMsg.length));
                         handleMessage(tokensMsg[1], message);
@@ -187,7 +188,8 @@ public class ChatClient {
             this.printWriter = new PrintWriter(new OutputStreamWriter(serverOut), true);
             return true;
         }catch (IOException e){
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Error connecting to server", "Error",JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
         return false;
     }
@@ -209,10 +211,18 @@ public class ChatClient {
     }
 
     public boolean create(String login, String password) throws IOException{
+        String cmd = "register " + login + " " + password + "\n";
+        serverOut.write(cmd.getBytes());
+
+        String response = bufferedIn.readLine();
+        System.out.println(response);
+        startMessageReader();
         return true;
     }
 
-    public void joinRoom(String roomName) {
+    public void joinRoom(String roomName) throws IOException {
+        String cmd = "join #" + roomName + "\n";
+        send(cmd);
     }
 
     public String getLogin() {
@@ -220,5 +230,6 @@ public class ChatClient {
     }
 
     public void send(String s) throws IOException {
+        serverOut.write(s.getBytes());
     }
 }
