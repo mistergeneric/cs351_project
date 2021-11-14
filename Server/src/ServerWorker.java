@@ -53,7 +53,11 @@ public class ServerWorker extends Thread {
                     handleLogoff();
                     break;
                 } else if ("login".equalsIgnoreCase(command)) {
-                    handleLogin(outputStream, response);
+                    if (user == null) {
+                        handleLogin(outputStream, response);
+                    } else {
+                        outputStream.write("You are logged in already\n".getBytes());
+                    }
                 } else if ("msg".equalsIgnoreCase(command)) {
                     if (user != null) {
                         handleMessage(response);
@@ -73,7 +77,11 @@ public class ServerWorker extends Thread {
                         outputStream.write("You must login first\n".getBytes());
                     }
                 } else if ("register".equalsIgnoreCase(command)) {
-                    handleRegister(response);
+                    if (user == null) {
+                        handleRegister(response);
+                    } else {
+                        outputStream.write("You are logged in already\n".getBytes());
+                    }
                 } else if ("friend".equalsIgnoreCase(command)) {
                     if (user != null) {
                         handleFriendRequest(response);
@@ -118,7 +126,7 @@ public class ServerWorker extends Thread {
                     }
                 } else if ("friendList".equalsIgnoreCase(command)) {
                     if (user != null) {
-                        friendList(response);
+                        friendList();
                     } else {
                         outputStream.write("You must login first\n".getBytes());
                     }
@@ -141,8 +149,8 @@ public class ServerWorker extends Thread {
         //clientSocket.close();
     }
 
-    //Is response here necessary?
-    private void friendList(String[] response) throws IOException {
+    //Is response here necessary? no
+    private void friendList() throws IOException {
         if (user.getFriends().size() > 0) {
             String friendsList = "Your friends:\n";
             for (String friend : user.getFriends()) {
@@ -177,6 +185,7 @@ public class ServerWorker extends Thread {
                     boolean addedLike = sw.getUser().addLike(user.getLogin().toLowerCase());
                     if (addedLike) {
                         outputStream.write("You've liked this user! \n".getBytes());
+                        server.updateStore();
                     } else {
                         outputStream.write("You've already liked this user!\n".getBytes());
                     }
@@ -201,6 +210,7 @@ public class ServerWorker extends Thread {
             outputStream.write(details.getBytes());
             user.setDescription(detailsToUpdate);
             outputStream.write("successfully updated".getBytes());
+            server.updateStore();
         }
     }
 
@@ -235,6 +245,7 @@ public class ServerWorker extends Thread {
                         removeRequest(userToRemove.toLowerCase());
                         outputStream.write("Friend removed\n".getBytes());
                         sw.send(user.getLogin() + " has rejected your friend request\n");
+                        server.updateStore();
                     }
                 }
             } else {
@@ -277,6 +288,7 @@ public class ServerWorker extends Thread {
                         sw.getUser().addFriend(user.getLogin());
                         outputStream.write("Friend added\n".getBytes());
                         sw.send(user.getLogin() + " has accepted your friend request\n");
+                        server.updateStore();
                     }
                 }
             } else {
@@ -343,9 +355,10 @@ public class ServerWorker extends Thread {
                 User user = new User(login, password);
                 outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
-                handleLogin(outputStream, response);
                 server.addUser(user);
-                user.SaveToFile("users.txt");
+                server.updateStore();
+                handleLogin(outputStream, response);
+                //user.SaveToFile("users.txt");
             } else {
                 outputStream.write("User already exists, please login \n".getBytes());
             }
@@ -441,7 +454,7 @@ public class ServerWorker extends Thread {
                 if (isLoggedIn(login)) {
                     outputStream.write("I'm sorry, user is already logged in\n".getBytes());
                 } else {
-                    if (user.isPasswordValid(login, password, "users.txt")) {
+                    if (server.findByUserName(login).getPassword().equals(password)) {
                         outputStream.write("Success\n".getBytes());
                         this.user = user;
                         System.out.println("User logged in successfully " + login);
@@ -477,8 +490,10 @@ public class ServerWorker extends Thread {
         boolean isLoggedIn = false;
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         for (ServerWorker sw : serverWorkers) {
-            if (sw.getUser().getLogin().equalsIgnoreCase(login)) {
-                isLoggedIn = true;
+            if (sw.getUser() != null) {
+                if (sw.getUser().getLogin().equalsIgnoreCase(login)) {
+                    isLoggedIn = true;
+                }
             }
         }
         return isLoggedIn;

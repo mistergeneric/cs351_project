@@ -99,7 +99,7 @@ public class ChatClient {
     public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
-        //user.SaveToFile(filePath);
+        //user.saveToFile(filePath);
     }
 
     protected boolean login(String id, String password) throws IOException {

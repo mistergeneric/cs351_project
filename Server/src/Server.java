@@ -1,5 +1,6 @@
 import chat.ChatRoom;
 import user.User;
+import user.UserContainer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,29 +9,27 @@ import java.util.*;
 
 public class Server extends Thread {
 
+    private final String USER_STORE = "userStore.txt";
+
     private int serverPort;
     private List<ServerWorker> serverWorkers;
     private HashSet<ChatRoom> chatRooms;
-    private HashSet<User> users;
-
+    private UserContainer userContainer;
 
     public Server(int serverPort) {
         this.serverPort = serverPort;
         serverWorkers = new ArrayList<>();
         this.chatRooms = new HashSet<>();
-        this.users = new HashSet<>();
+        this.userContainer = new UserContainer();
     }
 
     public HashSet<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(HashSet<User> users) {
-        this.users = users;
+        return userContainer.getUsers();
     }
 
     public void addUser(User user) {
-        users.add(user);
+        userContainer.addUser(user);
+        userContainer.saveToFile(USER_STORE);
     }
 
     public List<ServerWorker> getServerWorkers() {
@@ -41,9 +40,18 @@ public class Server extends Thread {
         return chatRooms;
     }
 
+    public void updateStore() {
+        userContainer.saveToFile(USER_STORE);
+    }
+
+    public void loadStore() {
+        userContainer.LoadFromFile(USER_STORE);
+    }
+
     @Override
     public void run() {
         ServerSocket serverSocket = null;
+        loadStore();
         try {
             serverSocket = new ServerSocket(serverPort);
         } catch (IOException e) {
@@ -85,7 +93,7 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
-        return users.stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
+        return userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
     }
 
 
