@@ -86,11 +86,10 @@ public class LoginPane extends JFrame {
         if (isCreate) {
             try {
                 if (client.create(login, password)) {
-                    loginSuccessful(login);
-                } else {
-                    // show error message
-                    responseText.setText("User already exists, please try another");
-
+                    responseText.setText(client.getResponseText());
+                }
+                else {
+                    responseText.setText(client.getResponseText());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -102,7 +101,7 @@ public class LoginPane extends JFrame {
                 } else {
                     // show error message
 
-                    responseText.setText("Invalid Login/Password.");
+                    responseText.setText(client.getResponseText());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
