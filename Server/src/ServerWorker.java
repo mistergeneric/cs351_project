@@ -314,13 +314,11 @@ public class ServerWorker extends Thread {
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         for (ServerWorker sw : serverWorkers) {
             if (friendToAdd.equalsIgnoreCase(sw.getLogin())) {
-                if(user.getCurrentChatRoom() == null) {
+                if (user.getCurrentChatRoom() == null) {
                     outputStream.write("You need to be in a chat room to send \n".getBytes());
-                }
-                else if(sw.getUser().getCurrentChatRoom() == null) {
+                } else if (sw.getUser().getCurrentChatRoom() == null) {
                     outputStream.write("The other user needs to be in a chat room to send \n".getBytes());
-                }
-                else if (user.getCurrentChatRoom().equalsIgnoreCase(sw.getUser().getCurrentChatRoom())) {
+                } else if (user.getCurrentChatRoom().equalsIgnoreCase(sw.getUser().getCurrentChatRoom())) {
                     String outMsg = login + " would like to add you as a friend!\n";
                     sw.send(outMsg);
                     boolean success = sw.addRequest(user.getLogin());
@@ -345,7 +343,7 @@ public class ServerWorker extends Thread {
                 User user = new User(login, password);
                 outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
-                handleLogin(outputStream,response);
+                handleLogin(outputStream, response);
                 server.addUser(user);
                 user.SaveToFile("users.txt");
             } else {
@@ -440,29 +438,32 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) != null) {
                 User user = server.findByUserName(login);
-                if (user.isPasswordValid(login, password, "users.txt")) {
-                    outputStream.write("Success\n".getBytes());
-                    this.user = user;
-                    System.out.println("User logged in successfully " + login);
-
-                    String onlineMsg = "user online: " + login + "\n";
-                    List<ServerWorker> serverWorkers = server.getServerWorkers();
-                    //send current user who is online
-                    for (ServerWorker sw : serverWorkers) {
-                        //don't report on itself or not logged in user
-                        if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
-                            String whoIsOnline = "online " + sw.getLogin() + "\n";
-                            send(whoIsOnline);
-                        }
-                    }
-                    //send other users the current status
-                    for (ServerWorker sw : serverWorkers) {
-                        if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
-                            sw.send(onlineMsg);
-                        }
-                    }
+                if (isLoggedIn(login)) {
+                    outputStream.write("I'm sorry, user is already logged in\n".getBytes());
                 } else {
-                    outputStream.write("Password incorrect, please try again\n".getBytes());
+                    if (user.isPasswordValid(login, password, "users.txt")) {
+                        outputStream.write("Success\n".getBytes());
+                        this.user = user;
+                        System.out.println("User logged in successfully " + login);
+                        List<ServerWorker> serverWorkers = server.getServerWorkers();
+                        String onlineMsg = "user online: " + login + "\n";
+                        //send current user who is online
+                        for (ServerWorker sw : serverWorkers) {
+                            //don't report on itself or not logged in user
+                            if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
+                                String whoIsOnline = "online " + sw.getLogin() + "\n";
+                                send(whoIsOnline);
+                            }
+                        }
+                        //send other users the current status
+                        for (ServerWorker sw : serverWorkers) {
+                            if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
+                                sw.send(onlineMsg);
+                            }
+                        }
+                    } else {
+                        outputStream.write("Password incorrect, please try again\n".getBytes());
+                    }
                 }
             } else {
                 outputStream.write("User not found, please register\n".getBytes());
@@ -470,6 +471,17 @@ public class ServerWorker extends Thread {
         } else {
             outputStream.write("incorrectly formatted command\n".getBytes());
         }
+    }
+
+    private boolean isLoggedIn(String login) {
+        boolean isLoggedIn = false;
+        List<ServerWorker> serverWorkers = server.getServerWorkers();
+        for (ServerWorker sw : serverWorkers) {
+            if (sw.getUser().getLogin().equalsIgnoreCase(login)) {
+                isLoggedIn = true;
+            }
+        }
+        return isLoggedIn;
     }
 
     private void send(String msg) throws IOException {
