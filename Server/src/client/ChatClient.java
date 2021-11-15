@@ -17,16 +17,13 @@ public class ChatClient {
     private BufferedReader bufferedIn;
     private BufferedWriter bufferedOut;
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
-    //private User user;
     private PrintWriter printWriter;
     private String login;
-    //private String filePath;
     private String responseText;
 
     public ChatClient(String serverName, int serverPort){
         this.serverName = serverName;
         this.serverPort = serverPort;
-        //filePath = "usersFile.txt";
     }
 
     public static void main(String[] args) throws IOException {
@@ -45,9 +42,6 @@ public class ChatClient {
                 }
             });
 
-            //System.out.println("Enter your ID: ");
-            String id = "";
-            String password = "";
             client.userInput();
         }
     }
@@ -76,12 +70,9 @@ public class ChatClient {
         serverOut.write(cmd.getBytes());
 
         responseText = bufferedIn.readLine();
-        //System.out.println(response);
 
         if ("Success".equalsIgnoreCase(responseText)){
             startMessageReader();
-            //user = new User(id, password);
-            //user.setChatClient(this);
             return true;
         } else {
             return false;

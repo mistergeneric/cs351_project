@@ -128,7 +128,12 @@ public class ServerWorker extends Thread {
                     } else {
                         outputStream.write("You must login first\n".getBytes());
                     }
-                } else {
+                } else if("broadcast".equalsIgnoreCase(command)){
+                    if(user != null){
+                        broadcast(response);
+                    }
+                }
+                else {
                     String msg = "unknown " + command + "\n";
                     outputStream.write(msg.getBytes());
                 }
@@ -478,4 +483,20 @@ public class ServerWorker extends Thread {
         }
     }
 
+    private void broadcast(String[] response) throws IOException {
+        String message = String.join(" ", Arrays.copyOfRange(response, 1, response.length));
+        if(user.getIsAdmin()){
+            //Loop through all the connected users to send them the broadcast
+            for(ServerWorker sw: server.getServerWorkers()){
+                //Don't send a message to the admin doing the broadcast
+                if(sw.getLogin() != user.getLogin()){
+                    String msg = "msg " + sw.getLogin() + " " + message + "\n";
+                    send(msg);
+                }
+            }
+        }
+        else{
+            send("You do not have permission to broadcast a message \n");
+        }
+    }
 }

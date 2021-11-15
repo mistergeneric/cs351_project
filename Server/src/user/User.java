@@ -89,7 +89,10 @@ public class User implements Serializable {
 
     public void SaveToFile(String filePath)
     {
-        ArrayList<User> users = LoadFromFile(filePath);
+        ArrayList<User> users = new ArrayList<>();
+        if(LoadFromFile(filePath).size() != 0){
+            users = LoadFromFile(filePath);
+        }
         users.add(this);
         try{
             FileOutputStream file = new FileOutputStream(filePath);
@@ -102,7 +105,7 @@ public class User implements Serializable {
         }
     }
 
-    ArrayList<User> LoadFromFile(String filePath){
+    public ArrayList<User> LoadFromFile(String filePath){
         ArrayList<User> users = new ArrayList<>();
         Boolean keepReading = true;
         try{
@@ -145,4 +148,9 @@ public class User implements Serializable {
         }
         return false;
     }
+
+    public boolean getIsAdmin(){
+        return isAdmin;
+    }
+
 }
