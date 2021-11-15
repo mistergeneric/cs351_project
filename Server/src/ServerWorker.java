@@ -142,8 +142,6 @@ public class ServerWorker extends Thread {
             String msg = "You typed: " + line + "\n";
             outputStream.write(msg.getBytes());
         }
-        //outputStream.write("Hello World\n".getBytes());
-        //clientSocket.close();
     }
 
     //Is response here necessary?
