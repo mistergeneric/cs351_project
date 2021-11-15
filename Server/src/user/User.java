@@ -149,5 +149,8 @@ public class User implements Serializable {
         return false;
     }
 
+    public boolean getIsAdmin(){
+        return isAdmin;
+    }
 
 }
