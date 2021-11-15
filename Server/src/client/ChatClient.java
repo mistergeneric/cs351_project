@@ -1,9 +1,6 @@
 package client;
 
-import client.MessageListener;
-import client.UserStatusListener;
-import user.User;
-
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -19,17 +16,17 @@ public class ChatClient {
     private InputStream serverIn;
     private BufferedReader bufferedIn;
     private BufferedWriter bufferedOut;
-    private ArrayList<UserStatusListener> userStatusListeners = new ArrayList<>();
     private ArrayList<MessageListener> messageListeners = new ArrayList<>();
-    private User user;
+    //private User user;
     private PrintWriter printWriter;
     private String login;
-    private String filePath;
+    //private String filePath;
+    private String responseText;
 
     public ChatClient(String serverName, int serverPort){
         this.serverName = serverName;
         this.serverPort = serverPort;
-        filePath = "usersFile.txt";
+        //filePath = "usersFile.txt";
     }
 
     public static void main(String[] args) throws IOException {
@@ -40,17 +37,6 @@ public class ChatClient {
             System.err.println("Connection failed");
         }else{
             System.out.println("Connection successful");
-
-            client.addUserStatusListener(new UserStatusListener(){
-                @Override
-                public void online(String login){
-                    System.out.println("ONLINE: " + login);
-                }
-                @Override
-                public void offline(String login){
-                    System.out.println("OFFLINE: " + login);
-                }
-            });
 
             client.addMessageListener(new MessageListener() {
                 @Override
@@ -63,22 +49,6 @@ public class ChatClient {
             String id = "";
             String password = "";
             client.userInput();
-            /*if(scanner.hasNextLine()){
-                id = scanner.nextLine();
-            }
-            System.out.println("Enter your password: ");
-            if(scanner.hasNextLine()){
-                password = scanner.nextLine();
-            }
-
-            if(client.login(id, password)){
-                System.out.println("Login Successful");
-                client.userInput();
-                client.msg("andrew", "Hello");
-            }else{
-                System.out.println("Login failed");
-            }*/
-            //client.logoff();
         }
     }
 
@@ -98,20 +68,20 @@ public class ChatClient {
     public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
-        user.SaveToFile(filePath);
+        //user.SaveToFile(filePath);
     }
 
     protected boolean login(String id, String password) throws IOException {
         String cmd = "login " + id + " " + password + "\n";
         serverOut.write(cmd.getBytes());
 
-        String response = bufferedIn.readLine();
-        System.out.println(response);
+        responseText = bufferedIn.readLine();
+        //System.out.println(response);
 
-        if ("Success".equalsIgnoreCase(response)){
+        if ("Success".equalsIgnoreCase(responseText)){
             startMessageReader();
-            user = new User(id, password);
-            user.setChatClient(this);
+            //user = new User(id, password);
+            //user.setChatClient(this);
             return true;
         } else {
             return false;
@@ -136,14 +106,15 @@ public class ChatClient {
                 String[] tokens = line.split(" ");
                 if(tokens != null && tokens.length > 0){
                     String cmd = tokens[0];
-                    if("online".equalsIgnoreCase(cmd)){
-                        handleOnline(tokens);
-                    }else if("offline".equalsIgnoreCase(cmd)){
-                        handleOffline(tokens);
-                    }else if("msg".equalsIgnoreCase(cmd)){
+                    if ("msg".equalsIgnoreCase(cmd)) {
                         String[] tokensMsg = line.split(" ");
                         String message = String.join(" ", Arrays.copyOfRange(tokensMsg, 2, tokensMsg.length));
                         handleMessage(tokensMsg[1], message);
+                    }else if (line.contains("would like to add you as a friend!")) {
+                        int response = JOptionPane.showConfirmDialog(null,line + "\nAccept?","Friends",JOptionPane.YES_NO_OPTION);
+                        handleFriendRequest(response,cmd);
+                    } else {
+                        JOptionPane.showMessageDialog(null,line);
                     }
                 }
             }
@@ -158,23 +129,19 @@ public class ChatClient {
         }
     }
 
+    private void handleFriendRequest(int response, String user) throws IOException {
+        String msg;
+        if (response == JOptionPane.YES_OPTION) {
+            msg = "accept " +  user + "\n";
+        } else {
+            msg = "reject " +  user + "\n";
+        }
+        send(msg);
+    }
+
     protected void handleMessage(String from, String message) {
         for(MessageListener listener : messageListeners){
             listener.onMessage(from, message);
-        }
-    }
-
-    protected void handleOffline(String[] tokens) {
-        String login = tokens[1];
-        for(UserStatusListener listener : userStatusListeners){
-            listener.offline(login);
-        }
-    }
-
-    protected void handleOnline(String[] tokens) throws IOException {
-        String login = tokens[1];
-        for(UserStatusListener listener : userStatusListeners){
-            listener.online(login);
         }
     }
 
@@ -187,17 +154,10 @@ public class ChatClient {
             this.printWriter = new PrintWriter(new OutputStreamWriter(serverOut), true);
             return true;
         }catch (IOException e){
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Error connecting to server", "Error",JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
         return false;
-    }
-
-    public void addUserStatusListener(UserStatusListener listener){
-        userStatusListeners.add(listener);
-    }
-
-    public void removeUserStatusListener(UserStatusListener listener){
-        userStatusListeners.remove(listener);
     }
 
     public void addMessageListener(MessageListener listener){
@@ -209,10 +169,18 @@ public class ChatClient {
     }
 
     public boolean create(String login, String password) throws IOException{
-        return true;
+        String cmd = "register " + login + " " + password + "\n";
+        serverOut.write(cmd.getBytes());
+
+        responseText = bufferedIn.readLine();
+
+        //startMessageReader();
+        return responseText.equals("Success");
     }
 
-    public void joinRoom(String roomName) {
+    public void joinRoom(String roomName) throws IOException {
+        String cmd = "join #" + roomName + "\n";
+        send(cmd);
     }
 
     public String getLogin() {
@@ -220,5 +188,10 @@ public class ChatClient {
     }
 
     public void send(String s) throws IOException {
+        serverOut.write(s.getBytes());
+    }
+
+    public String getResponseText() {
+        return responseText;
     }
 }
