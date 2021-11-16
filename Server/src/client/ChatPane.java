@@ -27,10 +27,34 @@ public class ChatPane extends JPanel {
 
     private JPanel generateCommandPanel() {
         JPanel commandPanel = new JPanel();
-        commandPanel.setLayout(new GridLayout(2,1));
+        commandPanel.setLayout(new GridLayout(3,1));
         commandPanel.add(getRoomActionPanel());
         commandPanel.add(getUserActionPanel());
+        if (client.getLogin().equals("admin")) {
+            commandPanel.add(getAdminActionPanel());
+        }
         return commandPanel;
+    }
+
+    private Component getAdminActionPanel() {
+        JPanel adminActionPanel = new JPanel();
+        adminActionPanel.setLayout(new FlowLayout());
+        JButton broadcast = new JButton("Broadcast");
+        broadcast.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = JOptionPane.showInputDialog("Broadcast Message:");
+                if (message != null && !message.equals("")) {
+                    try {
+                        client.send("broadcast " + message + "\n");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        adminActionPanel.add(broadcast);
+        return adminActionPanel;
     }
 
     public Component getUserActionPanel() {
@@ -191,7 +215,9 @@ public class ChatPane extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try {
                     String roomname = JOptionPane.showInputDialog("Which room would you like to view users from:");
-                    client.send("viewUsers " + roomname + "\n");
+                    if (roomname != null && !roomname.equals("")) {
+                        client.send("viewUsers " + roomname + "\n");
+                    }
                 } catch (IOException err) {
                     err.printStackTrace();
                 }
