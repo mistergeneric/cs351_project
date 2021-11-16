@@ -85,11 +85,11 @@ public class LoginPane extends JFrame {
 
         if (isCreate) {
             try {
-                if (client.create(login, password)) {
+                if (!client.create(login, password)) {
                     responseText.setText(client.getResponseText());
                 }
                 else {
-                    responseText.setText(client.getResponseText());
+                    loginSuccessful(login);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -111,6 +111,7 @@ public class LoginPane extends JFrame {
 
     private void loginSuccessful(String login) {
         // bring up the user list window
+        client.setLogin(login);
         ChatPane userListPane = new ChatPane(client);
         JFrame frame = new JFrame("Chat Client: " + login);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
