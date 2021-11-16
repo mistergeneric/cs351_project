@@ -158,8 +158,6 @@ public class ServerWorker extends Thread {
             //String msg = "You typed: " + line + "\n";
             //outputStream.write(msg.getBytes());
         }
-        //outputStream.write("Hello World\n".getBytes());
-        //clientSocket.close();
     }
 
     private void handleUsersInRoom(String[] response) throws IOException {
@@ -417,16 +415,6 @@ public class ServerWorker extends Thread {
     }
 
     private void handleLeave(String[] response) throws IOException {
-        /*if (response.length > 1 && response[1].charAt(0) == '#') {
-            String topic = response[1];
-            String message = server.removeFromChatRoom(user, topic);
-            currentChatroom.removeUser(this);
-            currentChatroom = null;
-            outputStream.write(message.getBytes());
-
-        } else {
-            outputStream.write("Incorrectly formatted leave \n".getBytes());
-        }*/
         if (currentChatroom == null) {
             outputStream.write("You are not in a chatroom\n".getBytes());
         } else {
@@ -466,28 +454,6 @@ public class ServerWorker extends Thread {
     private void handleMessage(String[] response) throws IOException {
         String sendTo = response[1];
         String msg = getMessageBody(response);
-
-        /*List<ServerWorker> serverWorkers = server.getServerWorkers();
-
-        if (sendTo.charAt(0) == '#') {
-            if (isMemberOfGroup(sendTo)) {
-                for (String user : server.findByChatRoomName(sendTo).getCurrentUsers()) {
-                    for (ServerWorker sw : serverWorkers) {
-                        if (user.equalsIgnoreCase(sw.getLogin())) {
-                            String outMsg = "msg for " + sendTo + " group from " + sw.getLogin() + " " + getMessageBody(response) + "\n";
-                            sw.send(outMsg);
-                        }
-                    }
-                }
-            }
-        } else {
-            for (ServerWorker sw : serverWorkers) {
-                if (sendTo.equalsIgnoreCase(sw.getLogin())) {
-                    String outMsg = "msg " + user.getLogin() + ": " + msg + "\n";
-                    sw.send(outMsg);
-                }
-            }
-        }*/
         for (ServerWorker worker : currentChatroom.getUsers()) {
             if (!worker.getLogin().equals(this.getLogin())) {
                 worker.send("msg " + this.getLogin() + " " + msg + "\n");

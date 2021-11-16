@@ -16,6 +16,7 @@ public class User implements Serializable {
     private HashSet<String> likes;
     private String currentChatRoom;
     protected ChatClient chatClient;
+    private static final long serialVersionUID = 6529685098267757690L;
     boolean isAdmin;
 
     public User(String login, String password) {
@@ -126,14 +127,14 @@ public class User implements Serializable {
         return users;
     }
 
-    boolean userExists(String login, String filePath){
+    public User getUser(String login, String filePath){
         ArrayList<User> users = LoadFromFile(filePath);
         for(User user: users){
             if(user.getLogin().equalsIgnoreCase(login)){
-                return true;
+                return user;
             }
         }
-        return false;
+        return null;
     }
 
     public boolean isPasswordValid(String login, String password, String filePath){

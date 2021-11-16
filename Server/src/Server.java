@@ -103,6 +103,7 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
+
         return  userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
     }
 
