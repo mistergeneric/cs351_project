@@ -103,12 +103,8 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
-        User user = new User("test", "test");
-        if(user.getUser(username, "users.txt") != null){
-            return user.getUser(username, "users.txt");
-        }
-        return null;
-        //return users.stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
+
+        return  userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
     }
 
 
