@@ -1,7 +1,9 @@
+import user.AdminUser;
 import user.User;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +14,7 @@ public class ServerWorker extends Thread {
     private final Server server;
     private OutputStream outputStream;
     private HashSet<String> friendRequests;
+    private ChatRoom currentChatroom;
 
     public ServerWorker(Server server, Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -33,7 +36,14 @@ public class ServerWorker extends Thread {
         try {
             handleClientSocket();
         } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                server.removeWorker(this);
+                handleLogoff();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            System.err.println("Client disconnect");
+            //e.printStackTrace();
         }
     }
 
@@ -106,7 +116,7 @@ public class ServerWorker extends Thread {
                     }
                 } else if ("update".equalsIgnoreCase(command)) {
                     if (user != null) {
-                        updateDetails(response);
+                        updateDetails(line.split(" ",2));
                     } else {
                         outputStream.write("You must login first\n".getBytes());
                     }
@@ -132,6 +142,12 @@ public class ServerWorker extends Thread {
                     if(user != null){
                         broadcast(response);
                     }
+                } else if ("showrooms".equalsIgnoreCase(command)) {
+                    if (user != null) {
+                        handleRoomList();
+                    }
+                } else if ("viewusers".equalsIgnoreCase(command)) {
+                    handleUsersInRoom(response);
                 }
                 else {
                     String msg = "unknown " + command + "\n";
@@ -139,11 +155,36 @@ public class ServerWorker extends Thread {
                 }
             }
 
-            String msg = "You typed: " + line + "\n";
-            outputStream.write(msg.getBytes());
+            //String msg = "You typed: " + line + "\n";
+            //outputStream.write(msg.getBytes());
         }
         //outputStream.write("Hello World\n".getBytes());
         //clientSocket.close();
+    }
+
+    private void handleUsersInRoom(String[] response) throws IOException {
+        ChatRoom room = server.findByChatRoomName('#' + response[1]);
+        if (room == null) {
+            send("No such room exists\n");
+        } else {
+            StringBuilder msg = new StringBuilder("users ");
+            for (ServerWorker worker : room.getUsers()) {
+                msg.append(worker.getLogin());
+            }
+            send(msg + "\n");
+        }
+    }
+
+    private void handleRoomList() throws IOException {
+        StringBuilder msg = new StringBuilder("Chatrooms ");
+        if (!server.getChatRooms().isEmpty()) {
+            for (ChatRoom room : server.getChatRooms()) {
+                msg.append(room.getChatRoomName()).append(" ");
+            }
+            send(msg + "\n");
+        } else {
+            send("No chatroom created yet\n");
+        }
     }
 
     //Is response here necessary?
@@ -162,13 +203,23 @@ public class ServerWorker extends Thread {
 
     public void friendsInChatRooms() throws IOException {
         List<ServerWorker> serverWorkers = server.getServerWorkers();
+        String message = "";
         for (ServerWorker sw : serverWorkers) {
             if (user.getFriends().contains(sw.getUser().getLogin().toLowerCase())) {
                 if (sw.getUser().getCurrentChatRoom() != null) {
-                    String message = sw.getLogin() + " is in chat room " + sw.getUser().getCurrentChatRoom() + "\n";
-                    outputStream.write(message.getBytes());
+                    message = sw.getLogin() + " is in chat room " + sw.getUser().getCurrentChatRoom() + "\n";
+                }
+                else if (isLoggedIn(sw.getLogin())) {
+                    message = sw.getLogin() + " not in a room " + "\n";
+                }
+                else {
+                    message = sw.getLogin() + " is offline " + "\n";
                 }
             }
+            send(message);
+        }
+        if (message.equals("")) {
+            outputStream.write("No friends online\n".getBytes());
         }
     }
 
@@ -182,6 +233,7 @@ public class ServerWorker extends Thread {
                     boolean addedLike = sw.getUser().addLike(user.getLogin().toLowerCase());
                     if (addedLike) {
                         outputStream.write("You've liked this user! \n".getBytes());
+                        server.updateStore();
                     } else {
                         outputStream.write("You've already liked this user!\n".getBytes());
                     }
@@ -206,6 +258,7 @@ public class ServerWorker extends Thread {
             outputStream.write(details.getBytes());
             user.setDescription(detailsToUpdate);
             outputStream.write("successfully updated".getBytes());
+            server.updateStore();
         }
     }
 
@@ -240,6 +293,7 @@ public class ServerWorker extends Thread {
                         removeRequest(userToRemove.toLowerCase());
                         outputStream.write("Friend removed\n".getBytes());
                         sw.send(user.getLogin() + " has rejected your friend request\n");
+                        server.updateStore();
                     }
                 }
             } else {
@@ -282,6 +336,7 @@ public class ServerWorker extends Thread {
                         sw.getUser().addFriend(user.getLogin());
                         outputStream.write("Friend added\n".getBytes());
                         sw.send(user.getLogin() + " has accepted your friend request\n");
+                        server.updateStore();
                     }
                 }
             } else {
@@ -348,11 +403,11 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) == null) {
                 User user = new User(login, password);
-                outputStream.write("Success\n".getBytes());
+                //outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
-                handleLogin(outputStream,response);
                 server.addUser(user);
-                user.SaveToFile("users.txt");
+                server.updateStore();
+                handleLogin(outputStream,response);
             } else {
                 outputStream.write("User already exists, please login \n".getBytes());
             }
@@ -362,13 +417,23 @@ public class ServerWorker extends Thread {
     }
 
     private void handleLeave(String[] response) throws IOException {
-        if (response.length > 1 && response[1].charAt(0) == '#') {
+        /*if (response.length > 1 && response[1].charAt(0) == '#') {
             String topic = response[1];
             String message = server.removeFromChatRoom(user, topic);
+            currentChatroom.removeUser(this);
+            currentChatroom = null;
             outputStream.write(message.getBytes());
 
         } else {
             outputStream.write("Incorrectly formatted leave \n".getBytes());
+        }*/
+        if (currentChatroom == null) {
+            outputStream.write("You are not in a chatroom\n".getBytes());
+        } else {
+            String message = server.removeFromChatRoom(user, currentChatroom.getChatRoomName());
+            currentChatroom.removeUser(this);
+            currentChatroom = null;
+            outputStream.write(message.getBytes());
         }
     }
 
@@ -378,6 +443,8 @@ public class ServerWorker extends Thread {
                 String topic = response[1];
                 server.addToChatRoom(user.getLogin(), topic);
                 user.setCurrentChatRoom(topic);
+                this.currentChatroom = server.findByChatRoomName(topic);
+                currentChatroom.addUser(this);
                 outputStream.write("You have joined the chat \n".getBytes());
 
             } else {
@@ -400,7 +467,7 @@ public class ServerWorker extends Thread {
         String sendTo = response[1];
         String msg = getMessageBody(response);
 
-        List<ServerWorker> serverWorkers = server.getServerWorkers();
+        /*List<ServerWorker> serverWorkers = server.getServerWorkers();
 
         if (sendTo.charAt(0) == '#') {
             if (isMemberOfGroup(sendTo)) {
@@ -420,11 +487,16 @@ public class ServerWorker extends Thread {
                     sw.send(outMsg);
                 }
             }
+        }*/
+        for (ServerWorker worker : currentChatroom.getUsers()) {
+            if (!worker.getLogin().equals(this.getLogin())) {
+                worker.send("msg " + this.getLogin() + " " + msg + "\n");
+            }
         }
     }
 
     private String getMessageBody(String[] response) {
-        return String.join(" ", Arrays.copyOfRange(response, 2, response.length));
+        return String.join(" ", Arrays.copyOfRange(response, 1, response.length));
     }
 
     private void handleLogoff() throws IOException {
@@ -432,7 +504,7 @@ public class ServerWorker extends Thread {
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String onlineMsg = "user offline: " + user.getLogin() + "\n";
         for (ServerWorker sw : serverWorkers) {
-            if (sw.getLogin() != null && !sw.getLogin().equals(user.getLogin())) {
+            if (sw.getLogin() != null && (!(sw.getLogin().equals(user.getLogin()))) && user.getFriends().contains(sw.getLogin())) {
                 sw.send(onlineMsg);
             }
         }
@@ -444,30 +516,39 @@ public class ServerWorker extends Thread {
             String login = response[1];
             String password = response[2];
             if (server.findByUserName(login) != null) {
-                User user = server.findByUserName(login);
-                if (user.isPasswordValid(login, password, "users.txt")) {
-                    outputStream.write("Success\n".getBytes());
-                    this.user = user;
-                    System.out.println("User logged in successfully " + login);
 
-                    String onlineMsg = "user online: " + login + "\n";
-                    List<ServerWorker> serverWorkers = server.getServerWorkers();
-                    //send current user who is online
-                    for (ServerWorker sw : serverWorkers) {
-                        //don't report on itself or not logged in user
-                        if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
-                            String whoIsOnline = "online " + sw.getLogin() + "\n";
-                            send(whoIsOnline);
-                        }
-                    }
-                    //send other users the current status
-                    for (ServerWorker sw : serverWorkers) {
-                        if (sw.getLogin() != null && !sw.getLogin().equals(login)) {
-                            sw.send(onlineMsg);
-                        }
-                    }
+                    User user = server.findByUserName(login);
+
+                if (isLoggedIn(login)) {
+                    outputStream.write("I'm sorry, user is already logged in\n".getBytes());
                 } else {
-                    outputStream.write("Password incorrect, please try again\n".getBytes());
+                    if (server.findByUserName(login).getPassword().equals(password)) {
+                        outputStream.write("Success\n".getBytes());
+                        this.user = user;
+                        user.setCurrentChatRoom(null);
+                        System.out.println("User logged in successfully " + login);
+                        List<ServerWorker> serverWorkers = server.getServerWorkers();
+                        String onlineMsg = "user online: " + login + "\n";
+                        //send current user who is online
+                        for (ServerWorker sw : serverWorkers) {
+                            //don't report on itself or not logged in user
+                            if (sw.getLogin() != null && (!(sw.getLogin().equals(login))) && sw.getUser().getFriends().contains(login)) {
+                                System.out.println(sw.getLogin());
+                                System.out.println(login);
+                                System.out.println(sw.getUser().getFriends().contains(login));
+                                String whoIsOnline = "online " + sw.getLogin() + "\n";
+                                send(whoIsOnline);
+                            }
+                        }
+                        //send other users the current status
+                        for (ServerWorker sw : serverWorkers) {
+                            if (sw.getLogin() != null && (!(sw.getLogin().equals(login))) && sw.getUser().getFriends().contains(login)) {
+                                sw.send(onlineMsg);
+                            }
+                        }
+                    } else {
+                        outputStream.write("Password incorrect, please try again\n".getBytes());
+                    }
                 }
             } else {
                 outputStream.write("User not found, please register\n".getBytes());
@@ -483,16 +564,27 @@ public class ServerWorker extends Thread {
         }
     }
 
+    private boolean isLoggedIn(String login) {
+        boolean isLoggedIn = false;
+        List<ServerWorker> serverWorkers = server.getServerWorkers();
+        for (ServerWorker sw : serverWorkers) {
+            if (sw.getUser() != null) {
+                if (sw.getUser().getLogin().equalsIgnoreCase(login)) {
+                    isLoggedIn = true;
+                }
+            }
+        }
+        return isLoggedIn;
+    }
+
+
     private void broadcast(String[] response) throws IOException {
         String message = String.join(" ", Arrays.copyOfRange(response, 1, response.length));
         if(user.getIsAdmin()){
             //Loop through all the connected users to send them the broadcast
             for(ServerWorker sw: server.getServerWorkers()){
-                //Don't send a message to the admin doing the broadcast
-                if(sw.getLogin() != user.getLogin()){
-                    String msg = "msg " + sw.getLogin() + " " + message + "\n";
-                    send(msg);
-                }
+                String msg = "msg " + getLogin() + " " + message + "\n";
+                sw.send(msg);
             }
         }
         else{
