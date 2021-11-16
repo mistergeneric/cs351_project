@@ -3,10 +3,11 @@ package user;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class AdminUser extends User {
+public class AdminUser extends User implements Serializable {
 
     Socket socket;
     public AdminUser(String login, String password) {
