@@ -1,5 +1,6 @@
-import chat.ChatRoom;
+import user.AdminUser;
 import user.User;
+import user.UserContainer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,10 +9,13 @@ import java.util.*;
 
 public class Server extends Thread {
 
+    private final String USER_STORE = "userStore.txt";
+
     private int serverPort;
     private List<ServerWorker> serverWorkers;
     private HashSet<ChatRoom> chatRooms;
     private HashSet<User> users;
+    private UserContainer userContainer;
 
 
     public Server(int serverPort) {
@@ -19,10 +23,11 @@ public class Server extends Thread {
         serverWorkers = new ArrayList<>();
         this.chatRooms = new HashSet<>();
         this.users = new HashSet<>();
+        userContainer = new UserContainer();
     }
 
     public HashSet<User> getUsers() {
-        return users;
+        return userContainer.getUsers();
     }
 
     public void setUsers(HashSet<User> users) {
@@ -30,7 +35,16 @@ public class Server extends Thread {
     }
 
     public void addUser(User user) {
-        users.add(user);
+        userContainer.addUser(user);
+        userContainer.saveToFile(USER_STORE);
+    }
+
+    public void updateStore() {
+        userContainer.saveToFile(USER_STORE);
+    }
+
+    public void loadStore() {
+        userContainer.LoadFromFile(USER_STORE);
     }
 
     public List<ServerWorker> getServerWorkers() {
@@ -44,8 +58,12 @@ public class Server extends Thread {
     @Override
     public void run() {
         ServerSocket serverSocket = null;
+        loadStore();
+        User admin = new AdminUser("admin","admin");
+        addUser(admin);
         try {
             serverSocket = new ServerSocket(serverPort);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -85,7 +103,7 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
-        return users.stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
+        return  userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
     }
 
 
