@@ -55,7 +55,7 @@ public class ChatClient {
     }
 
     void msg(String recipient, String message) throws IOException {
-        String cmd = "msg " + recipient + " " + message + "\n";
+        String cmd = "msg " +  message + "\n";
         serverOut.write(cmd.getBytes());
     }
 
@@ -104,7 +104,12 @@ public class ChatClient {
                     }else if (line.contains("would like to add you as a friend!")) {
                         int response = JOptionPane.showConfirmDialog(null,line + "\nAccept?","Friends",JOptionPane.YES_NO_OPTION);
                         handleFriendRequest(response,cmd);
-                    } else {
+                    } else if ("Chatrooms".equalsIgnoreCase(cmd)) {
+                        handleChatrooms(tokens);
+                    } else if ("users".equalsIgnoreCase(cmd)) {
+                        handleUserList(tokens);
+                    }
+                    else {
                         JOptionPane.showMessageDialog(null,line);
                     }
                 }
@@ -118,6 +123,16 @@ public class ChatClient {
             }
 
         }
+    }
+
+    private void handleUserList(String[] tokens) {
+        String users = String.join("\n",tokens);
+        JOptionPane.showMessageDialog(null,users);
+    }
+
+    private void handleChatrooms(String[] tokens) {
+        String chatrooms = String.join("\n",tokens);
+        JOptionPane.showMessageDialog(null,chatrooms);
     }
 
     private void handleFriendRequest(int response, String user) throws IOException {
@@ -165,8 +180,12 @@ public class ChatClient {
 
         responseText = bufferedIn.readLine();
 
-        //startMessageReader();
-        return responseText.equals("Success");
+        if ("Success".equalsIgnoreCase(responseText)){
+            startMessageReader();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void joinRoom(String roomName) throws IOException {
@@ -176,6 +195,10 @@ public class ChatClient {
 
     public String getLogin() {
         return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public void send(String s) throws IOException {
