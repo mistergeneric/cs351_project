@@ -2,12 +2,10 @@ package client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.ConnectException;
+
 
 /**
  * Initial login frame
@@ -16,38 +14,46 @@ import java.net.ConnectException;
 public class LoginPane extends JFrame {
 
     private ChatClient client;
-    private JTextField loginField = new JTextField();
-    private JPasswordField passwordField = new JPasswordField();
-    private JButton loginButton = new JButton("Login");
-    private JButton createButton = new JButton("Create");
-    private JLabel loginLabel = new JLabel("Login");
-    private JLabel passwordLabel = new JLabel("Password");
-    private JTextField responseText = new JTextField();
+    private final JTextField loginField = new JTextField();
+    private final JPasswordField passwordField = new JPasswordField();
+    private final JTextField serverTextField = new JTextField("localhost");
+    private final JTextField responseText = new JTextField();
 
 
-    public LoginPane() throws IOException {
+    public LoginPane() {
         super("Login to Chat");
-        this.client = new ChatClient("localhost", 8818);
-
-        client.connect();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JPanel loginPanel = new JPanel();
         loginPanel.setLayout(new BorderLayout(5,5));
+        JPanel fieldsPanel = new JPanel(new BorderLayout(5,5));
+
+        JPanel serverPanel = new JPanel(new FlowLayout());
+        JLabel serverLabel = new JLabel("Server Address");
+        serverLabel.setPreferredSize(new Dimension(100,20));
+        serverTextField.setPreferredSize(new Dimension(100,20));
+        serverPanel.add(serverLabel);
+        serverPanel.add(serverTextField);
+        fieldsPanel.add(serverPanel, BorderLayout.NORTH);
+
+
         JPanel loginSubPanel = new JPanel(new FlowLayout());
+        JLabel loginLabel = new JLabel("Login");
         loginLabel.setPreferredSize(new Dimension(100,20));
         loginSubPanel.add(loginLabel);
         loginField.setPreferredSize(new Dimension(100,20));
         loginSubPanel.add(loginField);
-        loginPanel.add(loginSubPanel,BorderLayout.NORTH);
+        fieldsPanel.add(loginSubPanel,BorderLayout.CENTER);
+
         JPanel passwordPanel = new JPanel(new FlowLayout());
         passwordField.setPreferredSize(new Dimension(100,20));
+        JLabel passwordLabel = new JLabel("Password");
         passwordLabel.setPreferredSize(new Dimension(100,20));
         passwordPanel.add(passwordLabel);
-
         passwordPanel.add(passwordField);
-        loginPanel.add(passwordPanel,BorderLayout.CENTER);
+        fieldsPanel.add(passwordPanel,BorderLayout.SOUTH);
+
         JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.add(responseText,BorderLayout.CENTER);
         responseText.setHorizontalAlignment(JTextField.CENTER);
@@ -55,23 +61,23 @@ public class LoginPane extends JFrame {
         responseText.setBackground(loginPanel.getBackground());
         responseText.setForeground(Color.RED);
         JPanel buttonPanel = new JPanel(new FlowLayout());
+        JButton loginButton = new JButton("Login");
         buttonPanel.add(loginButton);
+        JButton createButton = new JButton("Create");
         buttonPanel.add(createButton);
         infoPanel.add(buttonPanel,BorderLayout.SOUTH);
+        loginPanel.add(fieldsPanel,BorderLayout.CENTER);
         loginPanel.add(infoPanel,BorderLayout.SOUTH);
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doLogin(false);
-            }
+
+        loginButton.addActionListener(e -> {
+            doConnect(serverTextField.getText());
+            doLogin(false);
         });
 
-        createButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doLogin(true);
-            }
+        createButton.addActionListener(e -> {
+            doConnect(serverTextField.getText());
+            doLogin(true);
         });
 
         getContentPane().add(loginPanel,BorderLayout.CENTER);
@@ -79,9 +85,19 @@ public class LoginPane extends JFrame {
         setVisible(true);
     }
 
+    private void doConnect(String server) {
+
+        try {
+            this.client = new ChatClient(server,8818);
+            client.connect();
+        } catch (IOException e) {
+            responseText.setText(e.getMessage());
+        }
+    }
+
     private void doLogin(boolean isCreate) {
         String login = loginField.getText();
-        String password = passwordField.getText();
+        String password = String.valueOf(passwordField.getPassword());
 
         if (isCreate) {
             try {
@@ -134,7 +150,7 @@ public class LoginPane extends JFrame {
         dispose();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         LoginPane login = new LoginPane();
         login.setVisible(true);
