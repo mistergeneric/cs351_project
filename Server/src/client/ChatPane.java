@@ -67,6 +67,20 @@ public class ChatPane extends JPanel {
                 }
             }
         });
+        JButton kickUser = new JButton("Kick User");
+        kickUser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = JOptionPane.showInputDialog("Enter user to kick");
+                if (message != null && !message.equals("")) {
+                    try {
+                        client.send("kick " + message + "\n");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
         JButton modifyOtherUser = new JButton("Modify User Bio");
         modifyOtherUser.addActionListener(new ActionListener() {
             @Override
@@ -85,6 +99,7 @@ public class ChatPane extends JPanel {
         adminActionPanel.add(broadcast);
         adminActionPanel.add(delete);
         adminActionPanel.add(modifyOtherUser);
+        adminActionPanel.add(kickUser);
         return adminActionPanel;
     }
 

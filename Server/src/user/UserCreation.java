@@ -8,8 +8,8 @@ public class UserCreation {
         String filePath = "users.txt";
         User nullUser = new User("access", "access");
         AdminUser admin = new AdminUser("admin", "admin");
-        nullUser.SaveToFile(filePath);
-        admin.SaveToFile(filePath);
+        //nullUser.SaveToFile(filePath);
+        //admin.SaveToFile(filePath);
         ArrayList<User> users = new ArrayList<>();
         users = nullUser.LoadFromFile(filePath);
         for(User user: users){

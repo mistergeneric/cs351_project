@@ -148,6 +148,12 @@ public class ServerWorker extends Thread {
                     }
                 } else if ("viewusers".equalsIgnoreCase(command)) {
                     handleUsersInRoom(response);
+                } else if("editDescription".equalsIgnoreCase(command)){
+                    handleEditUserDescription(response);
+                } else if("delete".equalsIgnoreCase(command)){
+                    handleDeleteUser(response);
+                } else if("kick".equalsIgnoreCase(command)){
+                    handleKickUser(response);
                 }
                 else {
                     String msg = "unknown " + command + "\n";
@@ -554,12 +560,52 @@ public class ServerWorker extends Thread {
         if(user.getIsAdmin()){
             //Loop through all the connected users to send them the broadcast
             for(ServerWorker sw: server.getServerWorkers()){
-                String msg = "msg " + getLogin() + " " + message + "\n";
-                sw.send(msg);
+                if(sw.getLogin() != user.getLogin()){
+                    String msg = "msg " + getLogin() + " " + message + "\n";
+                    sw.send(msg);
+                }
             }
         }
         else{
             send("You do not have permission to broadcast a message \n");
+        }
+    }
+
+    private void handleEditUserDescription(String[] response){
+        if(user.getIsAdmin()){
+            String newDescription = String.join(" ", Arrays.copyOfRange(response, 2, response.length));
+            User user = null;
+            for(ServerWorker sw: server.getServerWorkers()){
+                if(sw.getLogin().equals(response[1])){
+                    user = sw.getUser();
+                }
+            }
+            if(user != null) user.setDescription(newDescription);
+            else System.out.println("The user was not found");
+        }
+    }
+
+    private void handleDeleteUser(String[] response) throws IOException {
+        if(user.getIsAdmin()){
+            for(ServerWorker sw: server.getServerWorkers()){
+                if(sw.getLogin().equals(response[1])){
+                    sw.handleLogoff();
+                }
+            }
+            AdminUser admin = new AdminUser("", "");
+            admin.deleteUser(response[1], "userStore.txt");
+        }
+    }
+
+    private void handleKickUser(String[] response) throws IOException {
+        if (user.getIsAdmin()) {
+            User user = null;
+            for (ServerWorker sw : server.getServerWorkers()) {
+                if (sw.getLogin().equals(response[1])) {
+                    user = sw.getUser();
+                    sw.handleLogoff();
+                }
+            }
         }
     }
 }
