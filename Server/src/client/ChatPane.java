@@ -53,7 +53,38 @@ public class ChatPane extends JPanel {
                 }
             }
         });
+        JButton delete = new JButton("Delete User");
+        delete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = JOptionPane.showInputDialog("Enter user to delete");
+                if (message != null && !message.equals("")) {
+                    try {
+                        client.send("delete " + message + "\n");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        JButton modifyOtherUser = new JButton("Modify User Bio");
+        modifyOtherUser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String user = JOptionPane.showInputDialog("Enter user to modify");
+                String bio = JOptionPane.showInputDialog("Enter new bio");
+                if (user != null) {
+                    try {
+                        client.send("modify " + user + " " + (bio==null ? "" : bio) + "\n");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
         adminActionPanel.add(broadcast);
+        adminActionPanel.add(delete);
+        adminActionPanel.add(modifyOtherUser);
         return adminActionPanel;
     }
 
