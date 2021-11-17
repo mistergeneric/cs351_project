@@ -37,21 +37,17 @@ public class AdminUser extends User implements Serializable {
             newAdmin.setDescription(user.getDescription());
         }
         //Delete the user from the user log
-        deleteUser(user, filePath);
+        deleteUser(user.getLogin(), filePath);
         //And add the admin into the user log
         SaveToFile(filePath);
         return newAdmin;
     }
 
-    public void deleteUser(User user, String filePath) throws IOException {
-        //This is for test purposes, in normal circumstance the chat client will always be assigned
-        if(user.chatClient != null){
-            user.chatClient.logoff();
-        }
+    public void deleteUser(String userToDeleteLogin, String filePath) throws IOException {
         ArrayList<User> users = LoadFromFile(filePath);
         User userToRemove = null;
         for(User userInList : users){
-            if(userInList.getLogin().equals(user.getLogin())){
+            if(userInList.getLogin().equals(userToDeleteLogin)){
                 userToRemove = userInList;
             }
         }

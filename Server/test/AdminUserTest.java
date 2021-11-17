@@ -42,7 +42,7 @@ public class AdminUserTest {
 
         assertEquals(5, users.size());
 
-        admin.deleteUser(user2, filePath);
+        admin.deleteUser(user2.getLogin(), filePath);
 
         users = admin.LoadFromFile(filePath);
         assertEquals(4, users.size());
