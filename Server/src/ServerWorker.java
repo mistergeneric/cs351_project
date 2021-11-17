@@ -584,7 +584,7 @@ public class ServerWorker extends Thread {
         if(user.getIsAdmin()){
             for(ServerWorker sw: server.getServerWorkers()){
                 if(sw.getLogin().equals(response[1])){
-                    sw.clientSocket.close();
+                    sw.handleLogoff();
                 }
             }
             AdminUser admin = new AdminUser("", "");
@@ -598,7 +598,7 @@ public class ServerWorker extends Thread {
             for (ServerWorker sw : server.getServerWorkers()) {
                 if (sw.getLogin().equals(response[1])) {
                     user = sw.getUser();
-                    sw.clientSocket.close();
+                    sw.handleLogoff();
                 }
             }
         }
