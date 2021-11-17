@@ -167,7 +167,7 @@ public class ServerWorker extends Thread {
         } else {
             StringBuilder msg = new StringBuilder("users ");
             for (ServerWorker worker : room.getUsers()) {
-                msg.append(worker.getLogin());
+                msg.append(worker.getLogin()).append(" ");
             }
             send(msg + "\n");
         }
