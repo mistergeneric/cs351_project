@@ -53,6 +53,22 @@ public class ChatPane extends JPanel {
                 }
             }
         });
+        JButton delete = new JButton("Delete User");
+        delete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = JOptionPane.showInputDialog("Enter user to delete");
+                if (message != null && !message.equals("")) {
+                    try {
+                        client.send("delete " + message + "\n");
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        adminActionPanel.add(delete);
         adminActionPanel.add(broadcast);
         return adminActionPanel;
     }
