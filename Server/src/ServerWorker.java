@@ -467,6 +467,11 @@ public class ServerWorker extends Thread {
 
     private void handleLogoff() throws IOException {
         server.removeWorker(this);
+        currentChatroom.removeUser(this);
+        server.removeFromChatRoom(this.user,currentChatroom.getChatRoomName());
+        currentChatroom=null;
+        user.setCurrentChatRoom(null);
+        server.updateStore();
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String onlineMsg = "user offline: " + user.getLogin() + "\n";
         for (ServerWorker sw : serverWorkers) {
