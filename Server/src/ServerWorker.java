@@ -210,8 +210,8 @@ public class ServerWorker extends Thread {
         String message = "";
         for (ServerWorker sw : serverWorkers) {
             if (user.getFriends().contains(sw.getUser().getLogin().toLowerCase())) {
-                if (sw.getUser().getCurrentChatRoom() != null) {
-                    message = sw.getLogin() + " is in chat room " + sw.getUser().getCurrentChatRoom() + "\n";
+                if (sw.getCurrentChatroom() != null) {
+                    message = sw.getLogin() + " is in chat room " + sw.getCurrentChatroom().getChatRoomName() + "\n";
                 }
                 else if (isLoggedIn(sw.getLogin())) {
                     message = sw.getLogin() + " not in a room " + "\n";
@@ -378,13 +378,13 @@ public class ServerWorker extends Thread {
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         for (ServerWorker sw : serverWorkers) {
             if (friendToAdd.equalsIgnoreCase(sw.getLogin())) {
-                if(user.getCurrentChatRoom() == null) {
+                if(currentChatroom == null) {
                     outputStream.write("You need to be in a chat room to send \n".getBytes());
                 }
-                else if(sw.getUser().getCurrentChatRoom() == null) {
+                else if(sw.getCurrentChatroom() == null) {
                     outputStream.write("The other user needs to be in a chat room to send \n".getBytes());
                 }
-                else if (user.getCurrentChatRoom().equalsIgnoreCase(sw.getUser().getCurrentChatRoom())) {
+                else if (currentChatroom.getChatRoomName().equalsIgnoreCase(sw.getCurrentChatroom().getChatRoomName())) {
                     String outMsg = login + " would like to add you as a friend!\n";
                     sw.send(outMsg);
                     boolean success = sw.addRequest(user.getLogin());
@@ -433,10 +433,10 @@ public class ServerWorker extends Thread {
 
     private void handleJoin(String[] response) throws IOException {
         if (response.length > 1 && response[1].charAt(0) == '#') {
-            if (user.getCurrentChatRoom() == null) {
+            if (currentChatroom == null) {
                 String topic = response[1];
                 server.addToChatRoom(user.getLogin(), topic);
-                user.setCurrentChatRoom(topic);
+                //user.setCurrentChatRoom(topic);
                 this.currentChatroom = server.findByChatRoomName(topic);
                 currentChatroom.addUser(this);
                 outputStream.write("You have joined the chat \n".getBytes());
@@ -473,10 +473,11 @@ public class ServerWorker extends Thread {
 
     private void handleLogoff() throws IOException {
         server.removeWorker(this);
-        currentChatroom.removeUser(this);
-        server.removeFromChatRoom(this.user,currentChatroom.getChatRoomName());
+        if (currentChatroom != null) {
+            currentChatroom.removeUser(this);
+            server.removeFromChatRoom(this.user, currentChatroom.getChatRoomName());
+        }
         currentChatroom=null;
-        user.setCurrentChatRoom(null);
         server.updateStore();
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String onlineMsg = "user offline: " + user.getLogin() + "\n";
@@ -502,7 +503,8 @@ public class ServerWorker extends Thread {
                     if (server.findByUserName(login).getPassword().equals(password)) {
                         outputStream.write("Success\n".getBytes());
                         this.user = user;
-                        user.setCurrentChatRoom(null);
+                        //user.setCurrentChatRoom(null);
+                        this.currentChatroom=null;
                         System.out.println("User logged in successfully " + login);
                         List<ServerWorker> serverWorkers = server.getServerWorkers();
                         String onlineMsg = "user online: " + login + "\n";
@@ -571,6 +573,10 @@ public class ServerWorker extends Thread {
         }
     }
 
+    public ChatRoom getCurrentChatroom() {
+        return currentChatroom;
+    }
+
     private void handleEditUserDescription(String[] response){
         if(user.getIsAdmin()){
             String newDescription = String.join(" ", Arrays.copyOfRange(response, 2, response.length));
@@ -599,12 +605,15 @@ public class ServerWorker extends Thread {
 
     private void handleKickUser(String[] response) throws IOException {
         if (user.getIsAdmin()) {
-            User user = null;
+            ServerWorker kickUser = null;
             for (ServerWorker sw : server.getServerWorkers()) {
                 if (sw.getLogin().equals(response[1])) {
-                    user = sw.getUser();
-                    sw.handleLogoff();
+                    kickUser = sw;
+                    break;
                 }
+            }
+            if (kickUser != null) {
+                kickUser.send("disconnect\n");
             }
         }
     }

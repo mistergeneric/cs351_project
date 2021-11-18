@@ -3,10 +3,8 @@ package user;
 import client.ChatClient;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 
 public class User implements Serializable {
     private String login;
@@ -14,7 +12,6 @@ public class User implements Serializable {
     private String description;
     private HashSet<String> friends;
     private HashSet<String> likes;
-    private String currentChatRoom;
     protected ChatClient chatClient;
     private static final long serialVersionUID = 6529685098267757690L;
     boolean isAdmin;
@@ -24,7 +21,6 @@ public class User implements Serializable {
         this.password = password;
         this.friends = new HashSet<>();
         this.likes = new HashSet<>();
-        this.currentChatRoom = null;
         isAdmin = false;
     }
 
@@ -66,14 +62,6 @@ public class User implements Serializable {
 
     public void setLikes(HashSet<String> likes) {
         this.likes = likes;
-    }
-
-    public String getCurrentChatRoom() {
-        return currentChatRoom;
-    }
-
-    public void setCurrentChatRoom(String currentChatRoom) {
-        this.currentChatRoom = currentChatRoom;
     }
 
     public boolean addFriend(String friend) {

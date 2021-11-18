@@ -51,7 +51,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("broadcast " + message + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -62,7 +62,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("delete " + message + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -73,7 +73,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("kick " + message + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -85,7 +85,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("modify " + user + " " + (bio==null ? "" : bio) + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -94,6 +94,11 @@ public class ChatPane extends JPanel {
         adminActionPanel.add(modifyOtherUser);
         adminActionPanel.add(kickUser);
         return adminActionPanel;
+    }
+
+    private void exceptionHandler(IOException ex) {
+        JOptionPane.showMessageDialog(null, ex.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
     }
 
     /**
@@ -111,7 +116,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("friend " + friend + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -123,7 +128,7 @@ public class ChatPane extends JPanel {
             try {
                 client.send(msg);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         userActions.add(viewDetails);
@@ -134,7 +139,7 @@ public class ChatPane extends JPanel {
             try {
                 client.send(msg);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         userActions.add(viewFriends);
@@ -153,7 +158,7 @@ public class ChatPane extends JPanel {
                     client.send("likes show\n");
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         userActions.add(editDetails);
@@ -166,7 +171,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.send("like " + liked + "\n");
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
         });
@@ -178,7 +183,7 @@ public class ChatPane extends JPanel {
                 client.logoff();
                 System.exit(0);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         userActions.add(logoff);
@@ -202,7 +207,7 @@ public class ChatPane extends JPanel {
                 try {
                     client.joinRoom(roomname);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    exceptionHandler(ex);
                 }
             }
 
@@ -214,7 +219,7 @@ public class ChatPane extends JPanel {
             try {
                 client.send("leave\n");
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         roomActions.add(leaveRoom);
@@ -224,7 +229,7 @@ public class ChatPane extends JPanel {
             try {
                 client.send("showrooms\n");
             } catch (IOException ex) {
-                ex.printStackTrace();
+                exceptionHandler(ex);
             }
         });
         roomActions.add(viewRooms);
@@ -237,7 +242,7 @@ public class ChatPane extends JPanel {
                     client.send("viewUsers " + roomname + "\n");
                 }
             } catch (IOException err) {
-                err.printStackTrace();
+                exceptionHandler(err);
             }
         });
         roomActions.add(usersInRoom);
