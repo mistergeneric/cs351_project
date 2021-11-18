@@ -28,6 +28,10 @@ public class User implements Serializable {
         isAdmin = false;
     }
 
+    public void setIsAdmin(boolean isAdmin){
+        this.isAdmin = isAdmin;
+    }
+
     public HashSet<String> getFriends() {
         return friends;
     }

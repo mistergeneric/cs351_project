@@ -1,4 +1,3 @@
-import user.AdminUser;
 import user.User;
 import user.UserContainer;
 
@@ -30,12 +29,21 @@ public class Server extends Thread {
         return userContainer.getUsers();
     }
 
+    public User getUserFromLogin(String login){
+        return userContainer.getUserFromLogin(login, USER_STORE);
+    }
+
     public void setUsers(HashSet<User> users) {
         this.users = users;
     }
 
     public void addUser(User user) {
         userContainer.addUser(user);
+        userContainer.saveToFile(USER_STORE);
+    }
+
+    public void removeUser(User user){
+        userContainer.removeUser(user);
         userContainer.saveToFile(USER_STORE);
     }
 
@@ -59,7 +67,8 @@ public class Server extends Thread {
     public void run() {
         ServerSocket serverSocket = null;
         loadStore();
-        User admin = new AdminUser("admin","admin");
+        User admin = new User("admin","admin");
+        admin.setIsAdmin(true);
         addUser(admin);
         try {
             serverSocket = new ServerSocket(serverPort);

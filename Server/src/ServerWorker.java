@@ -1,4 +1,3 @@
-import user.AdminUser;
 import user.User;
 
 import java.io.*;
@@ -15,6 +14,7 @@ public class ServerWorker extends Thread {
     private OutputStream outputStream;
     private HashSet<String> friendRequests;
     private ChatRoom currentChatroom;
+    private final String USER_STORE = "userStore.txt";
 
     public ServerWorker(Server server, Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -473,6 +473,13 @@ public class ServerWorker extends Thread {
 
     private void handleLogoff() throws IOException {
         server.removeWorker(this);
+        if(currentChatroom != null){
+            currentChatroom.removeUser(this);
+            server.removeFromChatRoom(this.user,currentChatroom.getChatRoomName());
+            currentChatroom=null;
+            user.setCurrentChatRoom(null);
+        }
+        server.updateStore();
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String onlineMsg = "user offline: " + user.getLogin() + "\n";
         for (ServerWorker sw : serverWorkers) {
@@ -575,7 +582,10 @@ public class ServerWorker extends Thread {
                     user = sw.getUser();
                 }
             }
-            if(user != null) user.setDescription(newDescription);
+            if(user != null){
+                user.setDescription(newDescription);
+                server.updateStore();
+            }
             else System.out.println("The user was not found");
         }
     }
@@ -587,17 +597,17 @@ public class ServerWorker extends Thread {
                     sw.handleLogoff();
                 }
             }
-            AdminUser admin = new AdminUser("", "");
-            admin.deleteUser(response[1], "userStore.txt");
+            if(server.getUserFromLogin(response[1]) != null){
+                server.removeUser(server.getUserFromLogin(response[1]));
+            }
+
         }
     }
 
     private void handleKickUser(String[] response) throws IOException {
         if (user.getIsAdmin()) {
-            User user = null;
             for (ServerWorker sw : server.getServerWorkers()) {
                 if (sw.getLogin().equals(response[1])) {
-                    user = sw.getUser();
                     sw.handleLogoff();
                 }
             }

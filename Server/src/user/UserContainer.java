@@ -22,6 +22,8 @@ public class UserContainer implements Serializable {
         users.add(user);
     }
 
+    public void removeUser(User user){ users.remove(user);}
+
     public synchronized void saveToFile(String filePath) {
         try {
             FileOutputStream file = new FileOutputStream(filePath);
@@ -32,6 +34,16 @@ public class UserContainer implements Serializable {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public User getUserFromLogin(String login, String filePath){
+        HashSet<User> users = LoadFromFile(filePath);
+        for(User user: users){
+            if(user.getLogin().equals(login)){
+                return user;
+            }
+        }
+        return null;
     }
 
     public synchronized HashSet<User> LoadFromFile(String filePath) {
