@@ -1,4 +1,3 @@
-import user.AdminUser;
 import user.User;
 
 import java.io.*;
@@ -15,6 +14,7 @@ public class ServerWorker extends Thread {
     private OutputStream outputStream;
     private HashSet<String> friendRequests;
     private ChatRoom currentChatroom;
+    private final String USER_STORE = "userStore.txt";
 
     public ServerWorker(Server server, Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -473,6 +473,7 @@ public class ServerWorker extends Thread {
 
     private void handleLogoff() throws IOException {
         server.removeWorker(this);
+
         if (currentChatroom != null) {
             currentChatroom.removeUser(this);
             server.removeFromChatRoom(this.user, currentChatroom.getChatRoomName());
@@ -587,6 +588,7 @@ public class ServerWorker extends Thread {
                     sw.send("Your bio was changed by admin to " + newDescription + "\n");
                 }
             }
+
             if(user != null) user.setDescription(newDescription);
             else send("The user was not found\n");
         }
@@ -602,6 +604,7 @@ public class ServerWorker extends Thread {
                     deleteUser = sw.getUser();
                 }
             }
+
             if (deleteUser != null) {
                 server.removeUser(deleteUser);
             }
