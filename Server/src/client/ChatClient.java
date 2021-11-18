@@ -117,7 +117,9 @@ public class ChatClient {
         }catch (Exception e){
             e.printStackTrace();
             try{
+                JOptionPane.showMessageDialog(null,e.getMessage());
                 socket.close();
+                System.exit(0);
             }catch(IOException ex){
                 ex.printStackTrace();
             }
