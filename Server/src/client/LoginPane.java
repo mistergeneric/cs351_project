@@ -9,7 +9,7 @@ import java.io.IOException;
 
 /**
  * Initial login frame
- * TODO ?extend so that host and port are input fields?
+ * creates server, login and password fields to be used with ChatClient
  */
 public class LoginPane extends JFrame {
 
@@ -19,12 +19,14 @@ public class LoginPane extends JFrame {
     private final JTextField serverTextField = new JTextField("localhost");
     private final JTextField responseText = new JTextField();
 
-
+    /**
+     * Constructor
+     */
     public LoginPane() {
         super("Login to Chat");
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
+        // nested panels for displaying
         JPanel loginPanel = new JPanel();
         loginPanel.setLayout(new BorderLayout(5,5));
         JPanel fieldsPanel = new JPanel(new BorderLayout(5,5));
@@ -36,7 +38,6 @@ public class LoginPane extends JFrame {
         serverPanel.add(serverLabel);
         serverPanel.add(serverTextField);
         fieldsPanel.add(serverPanel, BorderLayout.NORTH);
-
 
         JPanel loginSubPanel = new JPanel(new FlowLayout());
         JLabel loginLabel = new JLabel("Login");
@@ -85,6 +86,10 @@ public class LoginPane extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Attempt connection to server
+     * @param server String IP Address
+     */
     private void doConnect(String server) {
 
         try {
@@ -95,6 +100,10 @@ public class LoginPane extends JFrame {
         }
     }
 
+    /**
+     * Attempt login
+     * @param isCreate
+     */
     private void doLogin(boolean isCreate) {
         String login = loginField.getText();
         String password = String.valueOf(passwordField.getPassword());
@@ -125,6 +134,10 @@ public class LoginPane extends JFrame {
         }
     }
 
+    /**
+     * If login is successful
+     * @param login
+     */
     private void loginSuccessful(String login) {
         // bring up the user list window
         client.setLogin(login);
