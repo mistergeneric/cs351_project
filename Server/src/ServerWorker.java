@@ -148,7 +148,7 @@ public class ServerWorker extends Thread {
                     }
                 } else if ("viewusers".equalsIgnoreCase(command)) {
                     handleUsersInRoom(response);
-                } else if("editDescription".equalsIgnoreCase(command)){
+                } else if("modify".equalsIgnoreCase(command)){
                     handleEditUserDescription(response);
                 } else if("delete".equalsIgnoreCase(command)){
                     handleDeleteUser(response);
@@ -577,29 +577,34 @@ public class ServerWorker extends Thread {
         return currentChatroom;
     }
 
-    private void handleEditUserDescription(String[] response){
+    private void handleEditUserDescription(String[] response) throws IOException {
         if(user.getIsAdmin()){
             String newDescription = String.join(" ", Arrays.copyOfRange(response, 2, response.length));
             User user = null;
             for(ServerWorker sw: server.getServerWorkers()){
-                if(sw.getLogin().equals(response[1])){
+                if(sw != this && sw.getLogin().equals(response[1])){
                     user = sw.getUser();
+                    sw.send("Your bio was changed by admin to " + newDescription + "\n");
                 }
             }
             if(user != null) user.setDescription(newDescription);
-            else System.out.println("The user was not found");
+            else send("The user was not found\n");
         }
     }
 
     private void handleDeleteUser(String[] response) throws IOException {
         if(user.getIsAdmin()){
+            User deleteUser = null;
             for(ServerWorker sw: server.getServerWorkers()){
-                if(sw.getLogin().equals(response[1])){
-                    sw.handleLogoff();
+                if(sw != this && sw.getLogin().equals(response[1])){
+                    sw.send("Your details have been deleted by admin\n");
+                    sw.send("disconnect\n");
+                    deleteUser = sw.getUser();
                 }
             }
-            AdminUser admin = new AdminUser("", "");
-            admin.deleteUser(response[1], "userStore.txt");
+            if (deleteUser != null) {
+                server.removeUser(deleteUser);
+            }
         }
     }
 
@@ -607,7 +612,7 @@ public class ServerWorker extends Thread {
         if (user.getIsAdmin()) {
             ServerWorker kickUser = null;
             for (ServerWorker sw : server.getServerWorkers()) {
-                if (sw.getLogin().equals(response[1])) {
+                if (sw != this && sw.getLogin().equals(response[1])) {
                     kickUser = sw;
                     break;
                 }

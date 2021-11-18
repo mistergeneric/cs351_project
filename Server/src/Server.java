@@ -39,6 +39,11 @@ public class Server extends Thread {
         userContainer.saveToFile(USER_STORE);
     }
 
+    public void removeUser(User user) {
+        userContainer.removeUser(user);
+        userContainer.saveToFile(USER_STORE);
+    }
+
     public void updateStore() {
         userContainer.saveToFile(USER_STORE);
     }
