@@ -42,7 +42,7 @@ public class Server extends Thread {
         userContainer.saveToFile(USER_STORE);
     }
 
-    public void removeUser(User user){
+    public void removeUser(User user) {
         userContainer.removeUser(user);
         userContainer.saveToFile(USER_STORE);
     }
@@ -123,7 +123,6 @@ public class Server extends Thread {
             ChatRoom chatRoom = findByChatRoomName(chatRoomName);
             chatRoom.getCurrentUsers().remove(user.getLogin());
             responseMessage += "You have been removed from the chat room\n";
-            user.setCurrentChatRoom(null);
             if (chatRoom.getCurrentUsers().size() == 0) {
                 chatRooms.remove(chatRoom);
                 responseMessage += "Chat Room is empty and has been deleted\n";

@@ -22,7 +22,10 @@ public class UserContainer implements Serializable {
         users.add(user);
     }
 
-    public void removeUser(User user){ users.remove(user);}
+
+    public void removeUser(User user) {
+        users.remove(user);
+    }
 
     public synchronized void saveToFile(String filePath) {
         try {

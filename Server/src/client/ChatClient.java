@@ -62,7 +62,7 @@ public class ChatClient {
     public void logoff() throws IOException {
         String cmd = "logoff\n";
         serverOut.write(cmd.getBytes());
-        //user.SaveToFile(filePath);
+        System.exit(0);
     }
 
     protected boolean login(String id, String password) throws IOException {
@@ -108,6 +108,9 @@ public class ChatClient {
                         handleChatrooms(tokens);
                     } else if ("users".equalsIgnoreCase(cmd)) {
                         handleUserList(tokens);
+                    } else if ("disconnect".equalsIgnoreCase(cmd)) {
+                        JOptionPane.showMessageDialog(null,"You have been kicked from chat","Error",JOptionPane.ERROR_MESSAGE);
+                        logoff();
                     }
                     else {
                         JOptionPane.showMessageDialog(null,line);
@@ -115,7 +118,6 @@ public class ChatClient {
                 }
             }
         }catch (Exception e){
-            e.printStackTrace();
             try{
                 JOptionPane.showMessageDialog(null,e.getMessage());
                 socket.close();
