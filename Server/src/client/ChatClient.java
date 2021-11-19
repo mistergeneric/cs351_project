@@ -155,7 +155,7 @@ public class ChatClient {
         }
     }
 
-    protected boolean connect() throws IOException {
+    public boolean connect() throws IOException {
         try{
             socket = new Socket(serverName, serverPort);
             this.serverOut = socket.getOutputStream();

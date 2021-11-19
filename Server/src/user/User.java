@@ -1,9 +1,6 @@
 package user;
 
-import client.ChatClient;
-
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class User implements Serializable {
