@@ -449,13 +449,6 @@ public class ServerWorker extends Thread {
         }
     }
 
-    private boolean isMemberOfGroup(String groupName) {
-        if (server.findByChatRoomName(groupName) != null) {
-            return server.findByChatRoomName(groupName).getCurrentUsers().contains(user.getLogin());
-        }
-        return false;
-    }
-
     // "msg" "username" "message"
     private void handleMessage(String[] response) throws IOException {
         String sendTo = response[1];
@@ -495,8 +488,7 @@ public class ServerWorker extends Thread {
             String login = response[1];
             String password = response[2];
             if (server.findByUserName(login) != null) {
-
-                    User user = server.findByUserName(login);
+                User user = server.findByUserName(login);
 
                 if (isLoggedIn(login)) {
                     outputStream.write("I'm sorry, user is already logged in\n".getBytes());

@@ -29,10 +29,6 @@ public class Server extends Thread {
         return userContainer.getUsers();
     }
 
-    public User getUserFromLogin(String login){
-        return userContainer.getUserFromLogin(login, USER_STORE);
-    }
-
     public void setUsers(HashSet<User> users) {
         this.users = users;
     }
@@ -112,7 +108,6 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
-
         return  userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
     }
 
