@@ -7,7 +7,6 @@ import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ServerWorker extends Thread {
     private final Socket clientSocket;
@@ -496,18 +495,18 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) != null) {
 
-                    User loggingUser = server.findByUserName(login);
+                    User user = server.findByUserName(login);
 
                 if (isLoggedIn(login)) {
                     outputStream.write("I'm sorry, user is already logged in\n".getBytes());
                 } else {
                     if (server.findByUserName(login).getPassword().equals(password)) {
                         outputStream.write("Success\n".getBytes());
-                        this.user = loggingUser;
+                        this.user = user;
                         //user.setCurrentChatRoom(null);
                         this.currentChatroom=null;
                         System.out.println("User logged in successfully " + login);
-                        CopyOnWriteArrayList<ServerWorker> serverWorkers = new CopyOnWriteArrayList<>(server.getServerWorkers());
+                        List<ServerWorker> serverWorkers = server.getServerWorkers();
                         String onlineMsg = "user online: " + login + "\n";
                         //send current user who is online
                         for (ServerWorker sw : serverWorkers) {
@@ -546,7 +545,7 @@ public class ServerWorker extends Thread {
 
     private boolean isLoggedIn(String login) {
         boolean isLoggedIn = false;
-        CopyOnWriteArrayList<ServerWorker> serverWorkers = new CopyOnWriteArrayList<>(server.getServerWorkers());
+        List<ServerWorker> serverWorkers = server.getServerWorkers();
         for (ServerWorker sw : serverWorkers) {
             if (sw.getUser() != null) {
                 if (sw.getUser().getLogin().equalsIgnoreCase(login)) {
