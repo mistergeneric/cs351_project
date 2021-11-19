@@ -14,7 +14,8 @@ public class Server extends Thread {
     private List<ServerWorker> serverWorkers;
     private HashSet<ChatRoom> chatRooms;
     private HashSet<User> users;
-    private UserContainer userContainer;
+    private final UserContainer userContainer;
+    private final Object lock = new Object();
 
 
     public Server(int serverPort) {
@@ -34,8 +35,11 @@ public class Server extends Thread {
     }
 
     public void addUser(User user) {
-        userContainer.addUser(user);
-        userContainer.saveToFile(USER_STORE);
+        // stop other modifications while writing.
+        synchronized (lock) {
+            userContainer.addUser(user);
+            userContainer.saveToFile(USER_STORE);
+        }
     }
 
     public void removeUser(User user) {
@@ -44,7 +48,9 @@ public class Server extends Thread {
     }
 
     public void updateStore() {
-        userContainer.saveToFile(USER_STORE);
+        synchronized (lock) {
+            userContainer.saveToFile(USER_STORE);
+        }
     }
 
     public void loadStore() {
@@ -108,7 +114,11 @@ public class Server extends Thread {
     }
 
     public User findByUserName(String username) {
-        return  userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
+        // avoid reading whilst it is being updated
+        synchronized (lock) {
+            return userContainer.getUsers().stream().filter(user -> username.equalsIgnoreCase(user.getLogin())).findFirst().orElse(null);
+        }
+
     }
 
 
