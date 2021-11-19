@@ -3,6 +3,7 @@ import user.User;
 import user.UserContainer;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Random;
@@ -41,12 +42,11 @@ public class UserContainerTest {
         Random random = new Random();
         UserContainer userContainer = new UserContainer();
         int randomInt = random.nextInt(100000);
-        int finalRandomInt = randomInt;
         executor.submit(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < numIterations; i++) {
-                    String userName = "user" + (i * finalRandomInt - i);
+                    String userName = "user" + (i * randomInt - i);
                     userContainer.addUser(new User(userName, "pw"));
                     userContainer.saveToFile(filePath);
                 }
