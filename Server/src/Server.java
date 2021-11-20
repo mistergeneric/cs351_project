@@ -74,6 +74,7 @@ public class Server extends Thread {
         User admin = new User("admin","admin");
         admin.setIsAdmin(true);
         addUser(admin);
+        System.out.println("Server awaiting connections...");
         try {
             serverSocket = new ServerSocket(serverPort);
 
