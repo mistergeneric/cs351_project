@@ -222,9 +222,9 @@ public class ServerWorker extends Thread {
                     } else {
                         message = sw.getLogin() + " is offline " + "\n";
                     }
-                }
-                if (!message.equals("")) {
-                    send(message);
+                    if (!message.equals("")) {
+                        send(message);
+                    }
                 }
             }
         }
