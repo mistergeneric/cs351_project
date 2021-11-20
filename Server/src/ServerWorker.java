@@ -207,18 +207,20 @@ public class ServerWorker extends Thread {
         List<ServerWorker> serverWorkers = server.getServerWorkers();
         String message = "";
         for (ServerWorker sw : serverWorkers) {
-            if (user.getFriends().contains(sw.getUser().getLogin().toLowerCase())) {
-                if (sw.getCurrentChatroom() != null) {
-                    message = sw.getLogin() + " is in chat room " + sw.getCurrentChatroom().getChatRoomName() + "\n";
+            if (user!=null && sw.getUser() != null) {
+                if (user.getFriends().contains(sw.getUser().getLogin().toLowerCase())) {
+                    if (sw.getCurrentChatroom() != null) {
+                        message = sw.getLogin() + " is in chat room " + sw.getCurrentChatroom().getChatRoomName() + "\n";
+                    } else if (isLoggedIn(sw.getLogin())) {
+                        message = sw.getLogin() + " not in a room " + "\n";
+                    } else {
+                        message = sw.getLogin() + " is offline " + "\n";
+                    }
                 }
-                else if (isLoggedIn(sw.getLogin())) {
-                    message = sw.getLogin() + " not in a room " + "\n";
-                }
-                else {
-                    message = sw.getLogin() + " is offline " + "\n";
+                if (!message.equals("")) {
+                    send(message);
                 }
             }
-            send(message);
         }
         if (message.equals("")) {
             outputStream.write("No friends online\n".getBytes());
