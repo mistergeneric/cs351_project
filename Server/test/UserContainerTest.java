@@ -1,11 +1,15 @@
+import org.junit.After;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import user.User;
 import user.UserContainer;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,12 +20,21 @@ public class UserContainerTest {
     private UserContainer userContainer = new UserContainer();
     private String filePath = "testUserContainer.txt";
 
+    @Before
+    public void setUp() {
+        new File("testUserContainer.txt").delete();
+    }
+
+    @After
+    public void tearDown() {
+        new File("testUserContainer.txt").delete();
+    }
+
     @Test
     public void test_loadFromFile_SaveToFile() throws FileNotFoundException {
         //Emptying the file before testing
         PrintWriter pw = new PrintWriter(filePath);
         pw.close();
-
         assertEquals(0, userContainer.LoadFromFile(filePath).size());
         userContainer.addUser(new User("user1", "user1"));
         userContainer.addUser(new User("user2", "user2"));
@@ -33,6 +46,7 @@ public class UserContainerTest {
     @Test
     public void test_multiple_writeToFile() throws InterruptedException, FileNotFoundException {
         //Emptying the file before testing
+        new File("testUserContainer.txt").delete();
         PrintWriter pw = new PrintWriter(filePath);
         pw.close();
 

@@ -51,7 +51,8 @@ public class UserContainer implements Serializable {
             setUsers(new HashSet<>());
         }
         catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            users = new HashSet<User>();
         }
         return users;
     }
