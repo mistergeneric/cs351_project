@@ -460,9 +460,11 @@ public class ServerWorker extends Thread {
     private void handleMessage(String[] response) throws IOException {
         String sendTo = response[1];
         String msg = getMessageBody(response);
-        for (ServerWorker worker : currentChatroom.getUsers()) {
-            if (!worker.getLogin().equals(this.getLogin())) {
-                worker.send("msg " + this.getLogin() + " " + msg + "\n");
+        if (currentChatroom != null) {
+            for (ServerWorker worker : currentChatroom.getUsers()) {
+                if (!worker.getLogin().equals(this.getLogin())) {
+                    worker.send("msg " + this.getLogin() + " " + msg + "\n");
+                }
             }
         }
     }
@@ -578,7 +580,7 @@ public class ServerWorker extends Thread {
     }
 
     private void handleEditUserDescription(String[] response) throws IOException {
-        if(user.getIsAdmin()){
+        if(this.user.getIsAdmin()){
             String newDescription = String.join(" ", Arrays.copyOfRange(response, 2, response.length));
             User user = null;
             for(ServerWorker sw: server.getServerWorkers()){
