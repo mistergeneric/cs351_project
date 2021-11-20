@@ -152,6 +152,8 @@ public class ServerWorker extends Thread {
                     handleDeleteUser(response);
                 } else if("kick".equalsIgnoreCase(command)){
                     handleKickUser(response);
+                } else if ("likes".equalsIgnoreCase(command)) {
+                    handleLikes(response);
                 }
                 else {
                     String msg = "unknown " + command + "\n";
@@ -162,6 +164,10 @@ public class ServerWorker extends Thread {
             //String msg = "You typed: " + line + "\n";
             //outputStream.write(msg.getBytes());
         }
+    }
+
+    private void handleLikes(String[] response) {
+        user.setShowLikes(response[1].equals("show"));
     }
 
     private void handleUsersInRoom(String[] response) throws IOException {
@@ -261,7 +267,7 @@ public class ServerWorker extends Thread {
             details = "new user bio: " + detailsToUpdate + "\n";
             outputStream.write(details.getBytes());
             user.setDescription(detailsToUpdate);
-            outputStream.write("successfully updated".getBytes());
+            outputStream.write("successfully updated\n".getBytes());
             server.updateStore();
         }
     }
@@ -274,7 +280,11 @@ public class ServerWorker extends Thread {
             for (ServerWorker sw : serverWorkers) {
                 if (userForDetails.equalsIgnoreCase(sw.getLogin())) {
                     String details = "requested user bio: " + sw.getUser().getDescription() + "\n";
-                    details += "number of likes: " + sw.getUser().getLikes().size() + "\n";
+                    if (user.showLikes()) {
+                        details += "number of likes: " + sw.getUser().getLikes().size() + "\n";
+                    } else {
+                        details += "number of likes: hidden\n";
+                    }
                     outputStream.write(details.getBytes());
                     foundUser = true;
                 }

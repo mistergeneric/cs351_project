@@ -10,6 +10,7 @@ public class User implements Serializable {
     private HashSet<String> friends;
     private HashSet<String> likes;
     boolean isAdmin;
+    boolean showLikes;
 
     public User(String login, String password) {
         this.login = login;
@@ -17,6 +18,7 @@ public class User implements Serializable {
         this.friends = new HashSet<>();
         this.likes = new HashSet<>();
         isAdmin = false;
+        showLikes = true;
     }
 
     public void setIsAdmin(boolean isAdmin){
@@ -65,6 +67,14 @@ public class User implements Serializable {
 
     public boolean getIsAdmin(){
         return isAdmin;
+    }
+
+    public boolean showLikes() {
+        return showLikes;
+    }
+
+    public void setShowLikes(boolean showLikes) {
+        this.showLikes = showLikes;
     }
 
 }
