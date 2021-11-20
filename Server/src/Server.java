@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server extends Thread {
 
@@ -58,7 +59,8 @@ public class Server extends Thread {
     }
 
     public List<ServerWorker> getServerWorkers() {
-        return serverWorkers;
+        return
+                 new CopyOnWriteArrayList<>(serverWorkers);
     }
 
     public HashSet<ChatRoom> getChatRooms() {

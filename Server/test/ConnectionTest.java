@@ -34,6 +34,8 @@ public class ConnectionTest {
         while (server.getServerWorkers().size() < 100) {
             // wait for all registrations and logins.
         }
+        int clientSent[] = new int[clients.size()] ;
+        int index = 0;
         for (ChatClient client : clients) {
             Thread t = new Thread(client.getLogin()) {
                 @Override
@@ -41,13 +43,15 @@ public class ConnectionTest {
 
                     try {
                         client.send("like goodGuy\n");
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
+
             };
             executor.submit(t);
+            clientSent[index] = 1;
+            index++;
         }
 
         while (server.findByUserName("goodGuy").getLikes().size() < 100) {
@@ -56,6 +60,7 @@ public class ConnectionTest {
             the correct number of likes are processed at the same time, as the errors were taken care of as they were
             found*/
         }
+
         executor.shutdown();
         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         User u = server.findByUserName("goodGuy");
