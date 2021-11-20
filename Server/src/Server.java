@@ -39,13 +39,13 @@ public class Server extends Thread {
         // stop other modifications while writing.
         synchronized (lock) {
             userContainer.addUser(user);
-            userContainer.saveToFile(USER_STORE);
+            updateStore();
         }
     }
 
     public void removeUser(User user) {
         userContainer.removeUser(user);
-        userContainer.saveToFile(USER_STORE);
+        updateStore();
     }
 
     public void updateStore() {
@@ -86,15 +86,17 @@ public class Server extends Thread {
             try {
                 if (serverSocket != null) {
                     clientSocket = serverSocket.accept();
+                    ServerWorker serverWorker = new ServerWorker(this, clientSocket);
+                    serverWorker.start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ServerWorker serverWorker = new ServerWorker(this, clientSocket);
-            serverWorkers.add(serverWorker);
-            serverWorker.start();
+
         }
     }
+
+    public void addWorker(ServerWorker serverWorker) { serverWorkers.add(serverWorker); }
 
     public void removeWorker(ServerWorker serverWorker) {
         serverWorkers.remove(serverWorker);

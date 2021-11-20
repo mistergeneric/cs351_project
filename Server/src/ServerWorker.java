@@ -410,7 +410,6 @@ public class ServerWorker extends Thread {
                 //outputStream.write("Success\n".getBytes());
                 System.out.println("User registered successfully " + login);
                 server.addUser(user);
-                server.updateStore();
                 handleLogin(outputStream,response);
             } else {
                 outputStream.write("User already exists, please login \n".getBytes());
@@ -497,7 +496,7 @@ public class ServerWorker extends Thread {
             String password = response[2];
             if (server.findByUserName(login) != null) {
 
-                    User user = server.findByUserName(login);
+                User user = server.findByUserName(login);
 
                 if (isLoggedIn(login)) {
                     outputStream.write("I'm sorry, user is already logged in\n".getBytes());
@@ -507,6 +506,7 @@ public class ServerWorker extends Thread {
                         this.user = user;
                         //user.setCurrentChatRoom(null);
                         this.currentChatroom=null;
+                        server.addWorker(this);
                         System.out.println("User logged in successfully " + login);
                         List<ServerWorker> serverWorkers = server.getServerWorkers();
                         String onlineMsg = "user online: " + login + "\n";
@@ -584,7 +584,7 @@ public class ServerWorker extends Thread {
             String newDescription = String.join(" ", Arrays.copyOfRange(response, 2, response.length));
             User user = null;
             for(ServerWorker sw: server.getServerWorkers()){
-                if(sw != this && sw.getLogin().equals(response[1])){
+                if(sw != this && sw.getLogin()!= null && sw.getLogin().equals(response[1])){
                     user = sw.getUser();
                     sw.send("Your bio was changed by admin to " + newDescription + "\n");
                 }
