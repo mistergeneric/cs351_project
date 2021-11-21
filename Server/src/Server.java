@@ -13,11 +13,10 @@ public class Server extends Thread {
 
     private int serverPort;
     private List<ServerWorker> serverWorkers;
-    private HashSet<ChatRoom> chatRooms;
+    private final HashSet<ChatRoom> chatRooms;
     private HashSet<User> users;
     private final UserContainer userContainer;
     private final Object lock = new Object();
-
 
     public Server(int serverPort) {
         this.serverPort = serverPort;
@@ -102,7 +101,7 @@ public class Server extends Thread {
         serverWorkers.remove(serverWorker);
     }
 
-    public void addToChatRoom(String username, String chatRoomName) {
+    public synchronized void addToChatRoom(String username, String chatRoomName) {
         if (findByChatRoomName(chatRoomName) != null) {
             ChatRoom chatRoom = findByChatRoomName(chatRoomName);
             chatRoom.getCurrentUsers().add(username);
@@ -115,7 +114,9 @@ public class Server extends Thread {
     }
 
     public ChatRoom findByChatRoomName(String chatRoomName) {
-        return chatRooms.stream().filter(chatRoom -> chatRoomName.equals(chatRoom.getChatRoomName())).findFirst().orElse(null);
+        synchronized (chatRooms) {
+            return chatRooms.stream().filter(chatRoom -> chatRoomName.equals(chatRoom.getChatRoomName())).findFirst().orElse(null);
+        }
     }
 
     public User findByUserName(String username) {
